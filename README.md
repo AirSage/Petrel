@@ -16,21 +16,19 @@ While Storm has basic support for any Thrift-compatible language, that support i
 ** It has potential performance issues (e.g. building a dictionary by inserting one key at a time).
 ** It has no logging. If a spout or bolt raises an exception, the task will die without capturing any information about what happened or why.
 
-Petrel is a tool written at AirSage which addresses these issues. We plan to release it as open source soon.
+Petrel addresses these issues.
 
 h1. Topology definition
 
 <pre>
-import cdmafilewatcherspout
-import cdmafileparserbolt
-import pdebolt
-import pderesultfilebolt
+import randomsentence
+import splitsentence
+import wordcount
 
 def create(builder):
-    builder.setSpout("cdmafilewatcherspout", cdmafilewatcherspout.CDMAFileWatcherSpout())
-    builder.setBolt("cdmafileparserbolt", cdmafileparserbolt.CDMAFileParserBolt()).fieldsGrouping("cdmafilewatcherspout", ["filename"])
-    builder.setBolt("pdebolt", pdebolt.PDEBolt()).shuffleGrouping("cdmafileparserbolt")
-    builder.setBolt("pderesultfilebolt", pderesultfilebolt.PDEResultFileBolt()).fieldsGrouping("pdebolt", ["filename"])
+    builder.setSpout("spout", randomsentence.RandomSentenceSpout(), 1)
+    builder.setBolt("split", splitsentence.SplitSentenceBolt(), 1).shuffleGrouping("spout")
+    builder.setBolt("count", wordcount.WordCountBolt(), 1).fieldsGrouping("split", ["word"])
 </pre>
 
 h1. Building and submitting topologies
@@ -38,7 +36,7 @@ h1. Building and submitting topologies
 Use the following command to package and submit a topology to Storm:
 
 <pre>
-petrel submit --sourcejar ../../jvmpetrel/target/storm-petrel-*-SNAPSHOT.jar --config localhost.yaml pde
+petrel submit --sourcejar ../../jvmpetrel/target/storm-petrel-*-SNAPSHOT.jar --config localhost.yaml wordcount
 </pre>
 
 This command builds and submits a topology.
@@ -51,7 +49,7 @@ h2. Build
 
 h2. Execute
 
-Petrel makes it easy to run multiple versions of a topology side by side, as long as the code differences are manageable by virtualenv. Before a spout or bolt starts up, Petrel creates a new Python virtualenv and runs the topology-specific setup.sh script to install Python packages. It is shared by all the spouts or bolt instances from that topology running on that machine.
+Petrel makes it easy to run multiple versions of a topology side by side, as long as the code differences are manageable by virtualenv. Before a spout or bolt starts up, Petrel creates a new Python virtualenv and runs the topology-specific setup.sh script to install Python packages. It is shared by all the spouts or bolts from that instance of the topology on that machine.
 
 h1. Monitoring
 
@@ -65,7 +63,7 @@ h1. Logging
 
 Petrel redirects stdout and stderr to the Python logger.
 
-When Storm is running on a cluster, it can be nice to send certain messages (e.g. errors) to a central machine. Petrel provides the NIMBUS_HOST environment variable to help support this. For example, the following configuration declares a log handler which sends any worker log messages INFO or higher to the Nimbus host.\
+When Storm is running on a cluster, it can be nice to send certain messages (e.g. errors) to a central machine. Petrel provides the NIMBUS_HOST environment variable to help support this. For example, the following configuration declares a log handler which sends any worker log messages INFO or higher to the Nimbus host.
 
 <pre>
 [handler_hand02]
