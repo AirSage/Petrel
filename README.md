@@ -3,7 +3,8 @@ Petrel
 
 Tools for writing, submitting, debugging, and monitoring Storm topologies in pure Python.
 
-h1. Petrel
+Overview
+========
 
 While Storm has basic support for any Thrift-compatible language, that support is quite minimal:
 
@@ -18,7 +19,8 @@ While Storm has basic support for any Thrift-compatible language, that support i
 
 Petrel addresses these issues.
 
-h1. Topology definition
+Topology definition
+===================
 
 <pre>
 import randomsentence
@@ -31,7 +33,8 @@ def create(builder):
     builder.setBolt("count", wordcount.WordCountBolt(), 1).fieldsGrouping("split", ["word"])
 </pre>
 
-h1. Building and submitting topologies
+Building and submitting topologies
+==================================
 
 Use the following command to package and submit a topology to Storm:
 
@@ -41,17 +44,20 @@ petrel submit --sourcejar ../../jvmpetrel/target/storm-petrel-*-SNAPSHOT.jar --c
 
 This command builds and submits a topology.
 
-h2. Build
+Build
+-----
 
 * Get the topology definition by loading the create.py script and calling create().
 * Package a JAR containing the topology definition, code, and configuration.
 * Files listed in manifest.txt, e.g. additional configuration files
 
-h2. Execute
+Execute
+-------
 
 Petrel makes it easy to run multiple versions of a topology side by side, as long as the code differences are manageable by virtualenv. Before a spout or bolt starts up, Petrel creates a new Python virtualenv and runs the topology-specific setup.sh script to install Python packages. It is shared by all the spouts or bolts from that instance of the topology on that machine.
 
-h1. Monitoring
+Monitoring
+==========
 
 Petrel provides a "status" command which lists the active topologies and tasks on a cluster. You can optionally filter by task name and Storm port (i.e. worker slot) number.
 
@@ -59,7 +65,8 @@ Petrel provides a "status" command which lists the active topologies and tasks o
 petrel status 10.255.1.58
 </pre>
 
-h1. Logging
+Logging
+=======
 
 Petrel redirects stdout and stderr to the Python logger.
 
@@ -80,7 +87,8 @@ Petrel also has a "StormHandler" class sends messages to the Storm logger. This 
 </pre>
 
 
-h1. Testing
+Testing
+=======
 
 Petrel provides a "mock" module which mocks some of Storm's features. This makes it possible to test individual components and simple topologies in pure Python, without relying on the Storm runtime.
 
@@ -103,3 +111,8 @@ def test():
 </pre>
 
 In Petrel terms, a "simple" topology is one which only outputs to the default stream and has no branches or loops. run_simple_topology() assumes the first component in the list is a spout, and it passes the output of each component to the next component in the list.
+
+License
+=======
+
+The use and distribution terms for this software are covered by the BSD 3-clause license 1.0 (http://opensource.org/licenses/BSD-3-Clause) which can be found in the file LICENSE.txt at the root of this distribution. By using this software in any fashion, you are agreeing to be bound by the terms of this license. You must not remove this notice, or any other, from this software.
