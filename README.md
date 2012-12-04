@@ -11,11 +11,11 @@ While Storm has basic support for any Thrift-compatible language, that support i
 * Storm communicates with other languages by sending JSON messages through stdin and stdout. This makes it difficult to use pdb for debugging. Also, this design may not offer the best performance.
 * There is no easy way to supply configuration information when submitting a topology.
 * The Storm client for Python supplied in storm-starter is very basic.
-** It supports implementing spouts and bolts but not describing topologies. Thus you have to write Java code to describe your Python topology.
-** It has little or no support for including Python packages (.tar.gz or .egg files) with a topology.
-** It has no support for testing spouts or bolts outside of Storm.
-** It has potential performance issues (e.g. building a dictionary by inserting one key at a time).
-** It has no logging. If a spout or bolt raises an exception, the task will die without capturing any information about what happened or why.
+    - It supports implementing spouts and bolts but not describing topologies. Thus you have to write Java code to describe your Python topology.
+    - It has little or no support for including Python packages (.tar.gz or .egg files) with a topology.
+    - It has no support for testing spouts or bolts outside of Storm.
+    - It has potential performance issues (e.g. building a dictionary by inserting one key at a time).
+    - It has no logging. If a spout or bolt raises an exception, the task will die without capturing any information about what happened or why.
 
 Petrel addresses these issues.
 
