@@ -293,8 +293,11 @@ class Tuple(object):
 class Task(object):
     def shared_initialize(self):
         conf, context = initComponent()
-        self.task_index = context['taskIndex']
-        self.worker_port = context['workerPort']
+        
+        # These values are only available with a patched version of Storm.
+        self.task_index = context.get('taskIndex', -1)
+        self.worker_port = context.get('workerPort', -1)
+        
         self.initialize(conf, context)
 
     def report_exception(self, base_message, exception):
