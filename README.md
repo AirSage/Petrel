@@ -116,3 +116,49 @@ License
 =======
 
 The use and distribution terms for this software are covered by the BSD 3-clause license 1.0 (http://opensource.org/licenses/BSD-3-Clause) which can be found in the file LICENSE.txt at the root of this distribution. By using this software in any fashion, you are agreeing to be bound by the terms of this license. You must not remove this notice, or any other, from this software.
+
+Setting up Petrel
+=================
+
+First, you need to generate Python Thrift wrappers for Storm.
+
+Make sure you have the Thrift compiler installed. From the base Petrel directory, run:
+
+cd petrel/petrel
+mkdir generated
+cd generated/
+thrift -gen py -out . <Path to storm.thrift>
+
+Now run "ls" and you should see something like the following:
+
+__init__.py  storm
+
+Next, you need to build the jvmpetrel jar. Make sure you have Maven installed, then from the base Petrel directory, run:
+
+cd jvmpetrel
+mvn assembly:assembly
+
+If it works, you'll see a message near the end like:
+
+[INFO] BUILD SUCCESS
+
+Finally, you need to set up the Petrel Python library. From the base Petrel directory, run:
+
+cd petrel
+python setup.py develop
+
+This will download a few dependencies and then print:
+
+Finished processing dependencies for petrel==0.0.0
+
+Running the word count example
+==============================
+
+From the base Petrel directory, run:
+
+cd samples/wordcount
+./buildandrun --config topology.yaml
+
+This will run the topology in local mode. You can run it on a real cluster by providing an additional parameter, the name of the topology:
+
+./buildandrun --config topology.yaml wordcount
