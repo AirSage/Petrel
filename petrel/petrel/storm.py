@@ -115,6 +115,12 @@ def sendMsgToParent(msg):
             e.errno,
             str(e)))
     
+# This function is probably obsolete with the addition of the new
+# reportError() function.
+# TODO: Consider getting rid of this function and call reportError() instead.
+# However, need to consider the case where we are running on an older version
+# of Storm where the Storm back end does not support reportError()? Can we
+# detect that case and use this function instead?
 def sendFailureMsgToParent(msg):
     """This function is kind of a hack, but useful when a Python task
     encounters a fatal exception. "msg" should be a simple string like
@@ -151,7 +157,7 @@ def emitMany(*args, **kwargs):
         emitManySpout(*args, **kwargs)
 
 def emitDirect(task, *args, **kwargs):
-    kwargs[directTask] = task
+    kwargs["directTask"] = task
     __emit(*args, **kwargs)
 
 def __emit(*args, **kwargs):
@@ -246,6 +252,9 @@ def ackId(tupid):
 def fail(tup):
     """Fail a tuple"""
     sendMsgToParent({"command": "fail", "id": tup.id})
+
+def reportError(msg):
+    sendMsgToParent({"command": "error", "msg": msg})
 
 def log(msg):
     sendMsgToParent({"command": "log", "msg": msg})
