@@ -303,7 +303,7 @@ class Task(object):
     def report_exception(self, base_message, exception):
         parameters = (
             base_message,
-            os.environ['SCRIPT'],
+            os.environ.get('SCRIPT', sys.argv[0]),
             socket.gethostname(),
             'pid', os.getpid(),
             'port', self.worker_port,
