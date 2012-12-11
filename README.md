@@ -6,18 +6,12 @@ Tools for writing, submitting, debugging, and monitoring Storm topologies in pur
 Overview
 ========
 
-While Storm has basic support for any Thrift-compatible language, that support is quite minimal:
+Petrel offers some important improvements over the storm.py module provided with Storm:
 
-* Storm communicates with other languages by sending JSON messages through stdin and stdout. This makes it difficult to use pdb for debugging. Also, this design may not offer the best performance.
-* There is no easy way to supply configuration information when submitting a topology.
-* The Storm client for Python supplied in storm-starter is very basic.
- * It supports implementing spouts and bolts but not describing topologies. Thus you have to write Java code to describe your Python topology.
- * It has little or no support for including Python packages (.tar.gz or .egg files) with a topology.
- * It has no support for testing spouts or bolts outside of Storm.
- * It has potential performance issues (e.g. building a dictionary by inserting one key at a time).
- *It has no logging. If a spout or bolt raises an exception, the task will die without capturing any information about what happened or why.
-
-Petrel addresses these issues.
+* Topologies are implemented in 100% Python (using the generic JVMPetrel jar)
+* Petrel's packaging support automatically sets up a Python virtual environment for your topology and makes it easy to install additional Python packages.
+* "petrel.mock" allows testing of single components or single chains of related components.
+* Petrel automatically sets up logging for every spout or bolt and logs a stack trace on unhandled errors.
 
 Topology definition
 ===================
