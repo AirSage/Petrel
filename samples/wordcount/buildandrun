@@ -15,7 +15,7 @@ function error() {
 trap 'error ${LINENO}' ERR
 
 # Build the dependent Python eggs.
-pushd ../../petrel &>/dev/null
+pushd ../../ &>/dev/null
 rm -rf dist
 python setup.py bdist_egg &>/dev/null
 popd &>/dev/null
