@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 
-README = os.path.join(os.path.dirname(__file__), 'README.txt')
+README = os.path.join(os.path.dirname(__file__), 'README.md')
 long_description = open(README).read() + '\n\n'
 
 PACKAGE = "petrel"
