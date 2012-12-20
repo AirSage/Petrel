@@ -1,6 +1,6 @@
 # Standard files for Petrel
 logconfig.ini
-../../petrel/dist/petrel-*-py2.7.egg
+../../dist/petrel-*-py2.7.egg
 #setup.sh
 
 # Topology-specific files
