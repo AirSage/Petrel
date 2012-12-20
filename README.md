@@ -119,17 +119,20 @@ Setting up Petrel
 First, make sure you have the Thrift compiler version 0.7.0 installed. You can verify the version by running:
 
     thrift -version
-    
-Now you need to generate Python Thrift wrappers for Storm. From the base Petrel directory, run:
+
+Next, you need a copy of the Storm source code on your machine (or at least the storm.thrift file). The storm.thrift file must be from the version of Storm you will be running your topologies on.
+
+Now you need to generate Python Thrift wrappers for Storm. The commands below assume that the Storm source code is in a sibling directory to Petrel, and that directory is named "storm_src". From the base Petrel directory, run:
 
     cd petrel/petrel
     mkdir generated
     cd generated/
-    thrift -gen py -out . <Path to storm.thrift>
+    thrift -gen py -out . ../../../../storm_src/storm/src/storm.thrift
 
-Now run "ls" and you should see something like the following:
+Now run "ls" and you should see the following files and directories listed:
 
-    __init__.py  storm
+    __init__.py
+    storm
 
 Next, you need to build the jvmpetrel jar. Make sure you have Maven installed, then from the base Petrel directory, run:
 
@@ -138,7 +141,7 @@ Next, you need to build the jvmpetrel jar. Make sure you have Maven installed, t
 
 If it works, you'll see a message near the end like:
 
-[INFO] BUILD SUCCESS
+    [INFO] BUILD SUCCESS
 
 Finally, you need to set up the Petrel Python library. From the base Petrel directory, run:
 
@@ -147,7 +150,7 @@ Finally, you need to set up the Petrel Python library. From the base Petrel dire
 
 This will download a few dependencies and then print:
 
-Finished processing dependencies for petrel==0.0.0
+    Finished processing dependencies for petrel==0.0.0
 
 Running the word count example
 ==============================
