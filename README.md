@@ -3,6 +3,8 @@ Petrel
 
 Tools for writing, submitting, debugging, and monitoring Storm topologies in pure Python.
 
+NOTE: Unlike the base Storm package, which only requires Python 2.6, Petrel requires Python 2.7.
+
 Overview
 ========
 
