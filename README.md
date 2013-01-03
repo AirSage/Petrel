@@ -47,10 +47,21 @@ Build
 * Package a JAR containing the topology definition, code, and configuration.
 * Files listed in manifest.txt, e.g. additional configuration files
 
-Execute
--------
+Deploy and Run
+--------------
 
-Petrel makes it easy to run multiple versions of a topology side by side, as long as the code differences are manageable by virtualenv. Before a spout or bolt starts up, Petrel creates a new Python virtualenv and runs the topology-specific setup.sh script to install Python packages. It is shared by all the spouts or bolts from that instance of the topology on that machine.
+To deploy and run a Petrel topology on a Storm cluster, each Storm worker must have the following installed:
+
+* Python 2.7
+* setuptools
+* virtualenv
+
+Note that the worker machines don't require Petrel itself to be installed. Only the *submitting* machine needs to have Petrel. Each time you submit a topology using Petrel, it creates a custom jar file with the Petrel egg and and your Python spout and bolt code. These files in the wordcount example show how this works:
+
+* buildandrun
+* manifest.txt
+
+Because Petrel topologies are self contained, it is easy to run multiple versions of a topology on the same cluster, as long as the code differences are contained within virtualenv. Before a spout or bolt starts up, Petrel creates a new Python virtualenv and runs the optional topology-specific setup.sh script to install Python packages. This virtual environment is shared by all the spouts or bolts from that instance of the topology on that machine.
 
 Monitoring
 ==========
