@@ -40,15 +40,18 @@ class RandomSentenceSpout(Spout):
         log.debug('randomsentence emitting: %s', sentence)
         storm.emit([sentence])
 
-def test():
-    # To run this:
-    # pip install nose
-    # nosetests wordcount.py
-    from nose.tools import assert_true
-    from petrel import mock
-    spout = RandomSentenceSpout()
-    result = mock.run_simple_topology([spout])
-    assert_true(isinstance(result[spout][0].sentence, str))
+# TODO: Revisit this. Currently the spout runs forever, so it's not suitable
+# for run_simple_topology(). We could modify the spout so it stops after
+# emitting 'n' tuples.
+#def test():
+#    # To run this:
+#    # pip install nose
+#    # nosetests wordcount.py
+#    from nose.tools import assert_true
+#    from petrel import mock
+#    spout = RandomSentenceSpout()
+#    result = mock.run_simple_topology(None, [spout])
+#    assert_true(isinstance(result[spout][0].sentence, str))
 
 def run():
     RandomSentenceSpout().run()

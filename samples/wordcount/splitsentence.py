@@ -33,7 +33,7 @@ def test():
         ["Madam, I'm Adam."],
     ])
     
-    result = mock.run_simple_topology([mock_spout, bolt], result_type=mock.LIST)
+    result = mock.run_simple_topology(None, [mock_spout, bolt], result_type=mock.LIST)
     assert_equal([['Madam,'], ["I'm"], ['Adam.']], result[bolt])
 
 def run():

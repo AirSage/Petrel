@@ -40,7 +40,7 @@ def test():
         ['word'],
     ])
     
-    result = mock.run_simple_topology([mock_spout, bolt], result_type=mock.LIST)
+    result = mock.run_simple_topology(None, [mock_spout, bolt], result_type=mock.LIST)
     assert_equal(2, bolt._count['word'])
     assert_equal(1, bolt._count['other'])
     assert_equal([['word', 1], ['other', 1], ['word', 2]], result[bolt])
