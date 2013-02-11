@@ -147,6 +147,9 @@ class _BoltGetter(object):
     def fieldsGrouping(self, componentId, fields, streamId='default'):
         return self.grouping(componentId, 'fields', fields, streamId)
 
+    def globalGrouping(self, componentId, streamId='default'):
+        return self.fieldsGrouping(componentId, [], streamId)
+
     def shuffleGrouping(self, componentId, streamId='default'):
         return self.grouping(componentId, 'shuffle', NullStruct(), streamId)
 
