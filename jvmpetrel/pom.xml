@@ -50,6 +50,75 @@
 		</dependency> -->
 	</dependencies>
 
+	<profiles>
+		<profile>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+	                        <property>
+					<name>storm_version</name>
+					<value>0.7.4</value>
+				</property>
+			</activation>
+			<build>
+				<finalName>storm-petrel-0.7.4-SNAPSHOT</finalName>
+			</build>
+			<id>storm0.7.4</id>
+			<dependencies>
+				<dependency>
+					<groupId>storm</groupId>
+					<artifactId>storm-lib</artifactId>
+					<version>0.7.4</version>
+					<!-- keep storm out of the jar-with-dependencies -->
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+	                        <property>
+					<name>storm_version</name>
+					<value>0.8.0</value>
+				</property>
+			</activation>
+			<build>
+				<finalName>storm-petrel-0.8.0-SNAPSHOT</finalName>
+			</build>
+			<id>storm0.8.0</id>
+			<dependencies>
+				<dependency>
+					<groupId>storm</groupId>
+					<artifactId>storm-lib</artifactId>
+					<version>0.8.0</version>
+					<!-- keep storm out of the jar-with-dependencies -->
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+	                        <property>
+					<name>storm_version</name>
+					<value>0.8.2</value>
+				</property>
+			</activation>
+			<build>
+				<finalName>storm-petrel-0.8.2-SNAPSHOT</finalName>
+			</build>
+			<id>storm0.8.2</id>
+			<dependencies>
+				<dependency>
+					<groupId>storm</groupId>
+					<artifactId>storm-lib</artifactId>
+					<version>0.8.2</version>
+					<!-- keep storm out of the jar-with-dependencies -->
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+	
 	<build>
 		<sourceDirectory>src/jvm</sourceDirectory>
 		<resources>

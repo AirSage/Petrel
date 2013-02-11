@@ -2,7 +2,9 @@ import os
 import sys
 import argparse
 import traceback
+import subprocess
 
+import pkg_resources
 import yaml
 
 from .util import read_yaml
@@ -10,8 +12,20 @@ from .package import build_jar
 from .emitter import EmitterBase
 from .status import status
 
+def get_storm_version():
+    return subprocess.check_output(['storm', 'version']).strip()    
+
+def get_sourcejar():
+    storm_version = get_storm_version()
+    sourcejar = pkg_resources.resource_filename(
+        pkg_resources.Requirement.parse('petrel'),
+        'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % storm_version)
+    return sourcejar
+
 def submit(sourcejar, destjar, config, venv=None, name=None, definition=None):
     # Build a topology jar and submit it to Storm.
+    if not sourcejar:
+        sourcejar = get_sourcejar()
     build_jar(
         source_jar_path=sourcejar,
         dest_jar_path=destjar,
@@ -39,7 +53,7 @@ def main():
     parser = argparse.ArgumentParser(prog='petrel', description='Petrel command line')
     subparsers = parser.add_subparsers()
     parser_submit = subparsers.add_parser('submit')
-    parser_submit.add_argument('--sourcejar', dest='sourcejar', required=True, help='source JAR path')
+    parser_submit.add_argument('--sourcejar', dest='sourcejar', help='source JAR path')
     parser_submit.add_argument('--destjar', dest='destjar', default='topology.jar',
                         help='destination JAR path')
     parser_submit.add_argument('--config', dest='config', required=True,

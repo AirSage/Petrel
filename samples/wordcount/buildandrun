@@ -21,4 +21,4 @@ python setup.py bdist_egg &>/dev/null
 popd &>/dev/null
 
 # Build and submit the topology jar.
-petrel submit --sourcejar ../../jvmpetrel/target/storm-petrel-*-SNAPSHOT.jar $@
+petrel submit $@

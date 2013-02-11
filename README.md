@@ -124,44 +124,48 @@ License
 
 The use and distribution terms for this software are covered by the BSD 3-clause license 1.0 (http://opensource.org/licenses/BSD-3-Clause) which can be found in the file LICENSE.txt at the root of this distribution. By using this software in any fashion, you are agreeing to be bound by the terms of this license. You must not remove this notice, or any other, from this software.
 
-Setting up Petrel
-=================
+Instructions for building from source
+=====================================
 
-First, make sure you have the Thrift compiler version 0.7.0 installed. You can verify the version by running:
+If you plan to use use Petrel by cloning its source code repository from github.com, follow these instructions.
 
-    thrift -version
+Ensure the following tools are installed:
 
-Next, you need a copy of the Storm source code on your machine (or at least the storm.thrift file). The storm.thrift file must be from the version of Storm you will be running your topologies on.
+* Storm
+** Test with "storm version"
+** Should print something like "0.7.4"
+* Thrift compiler
+** Test with "thrift -version"
+** Should print "Thrift version 0.7.0"
+* Maven (test with "mvn -version")
 
-Now you need to generate Python Thrift wrappers for Storm. The commands below assume that the Storm source code is in a sibling directory to Petrel, and that directory is named "storm_src". From the base Petrel directory, run:
+Clone Petrel from github. Then run:
 
-    cd petrel/petrel
-    mkdir generated
-    cd generated/
-    thrift -gen py -out . ../../../../storm_src/storm/src/storm.thrift
-
-Now run "ls" and you should see the following files and directories listed:
-
-    __init__.py
-    storm
-
-Next, you need to build the jvmpetrel jar. Make sure you have Maven installed, then from the base Petrel directory, run:
-
-    cd jvmpetrel
-    mvn assembly:assembly
-
-If it works, you'll see a message near the end like:
-
-    [INFO] BUILD SUCCESS
-
-Finally, you need to set up the Petrel Python library. From the base Petrel directory, run:
-
-    cd petrel
+    cd Petrel/petrel
     python setup.py develop
 
-This will download a few dependencies and then print:
+This will download a few dependencies and then print a message like:
 
-    Finished processing dependencies for petrel==0.0.0
+    Finished processing dependencies for petrel==0.7.4.0.1
+
+Setting up Petrel from an egg
+=============================
+
+Soon Petrel will be available as a download from the Python Package Index (pypi). If you plan to install Petrel from PyPi, follow these instructions.
+
+First, make sure a version of "storm" is installed and in your path:
+
+    storm version
+    
+This should print a number such as "0.7.4". Download the latest Petrel egg file that begins with these digits.
+
+Install the egg:
+
+easy_install petrel*.egg
+
+This will download a few dependencies and then print a message like:
+
+    Finished processing dependencies for petrel==0.7.4.0.1
 
 Running the word count example
 ==============================
