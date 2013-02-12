@@ -56,7 +56,12 @@ setup(name=PACKAGE
     ,long_description=long_description
     ,classifiers=[
          "Programming Language :: Python"
-        ,("Topic :: Software Development :: Libraries :: Python Modules")
+        ,"Operating System :: POSIX :: Linux"
+        ,"Development Status :: 3 - Alpha"
+        ,"Intended Audience :: Developers"
+        ,"License :: OSI Approved :: BSD License"
+        ,"Topic :: Software Development :: Libraries :: Python Modules"
+        ,"Topic :: System :: Distributed Computing"
     ]
     ,keywords='Storm Topology Builder'
     ,author='bhart'
@@ -66,7 +71,7 @@ setup(name=PACKAGE
         ]
     ,packages=find_packages()
     ,package_data={'': ['*.jar']}
-    ,license='Copyright AirSage, Inc'
+    ,license='BSD 3-clause'
     ,install_requires=[
         'simplejson>=2.6.0',
         # Request specific Thrift version. Storm is in Java and may be sensitive to version incompatibilities.
