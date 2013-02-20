@@ -88,7 +88,7 @@ def main():
         func(**args.__dict__)
     except Exception as e:
         print str(e)
-        #traceback.print_exc()
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == '__main__':
