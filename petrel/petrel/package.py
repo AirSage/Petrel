@@ -38,7 +38,7 @@ def add_file_to_jar(jar, directory, script=None, required=True):
             # Assumption: Drop the path when adding to the jar.
             add_to_jar(jar, os.path.basename(this_path), f.read())
 
-def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None):
+def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None, logdir=None):
     """Build a StormTopology .jar which encapsulates the topology defined in
     topology_dir. Optionally override the module and function names. This
     feature supports the definition of multiple topologies in a single
@@ -51,9 +51,9 @@ def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None
     config_yaml = read_yaml(config)
     parallelism = dict((k.split('.')[-1], v) for k, v in config_yaml.iteritems()
         if k.startswith('petrel.parallelism'))
-    
+
     pip_options = config_yaml.get('petrel.pip_options', '')
-    
+
     module_name, dummy, function_name = definition.rpartition('.')
     
     topology_dir = os.getcwd()
@@ -99,32 +99,32 @@ petrel.host: %s
 
         # Add the spout and bolt Python scripts to the jar. Create a
         # setup_<script>.sh for each Python script.
-    
+
         # Add Python scripts and any other per-script resources.
         for k, v in chain(builder._spouts.iteritems(), builder._bolts.iteritems()):
             add_file_to_jar(jar, topology_dir, v.script)
-            
+
             # Create a bootstrap script.
             if venv is not None:
                 # Allow overriding the execution command from the "petrel"
                 # command line. This is handy if the server already has a
                 # virtualenv set up with the necessary libraries.
                 v.execution_command = os.path.join(venv, 'bin/python')
-            
+
             # If a parallelism value was specified in the configuration YAML,
             # override any setting provided in the topology definition script.
             if k in parallelism:
                 builder._commons[k].parallelism_hint = int(parallelism.pop(k))
-            
+
             v.execution_command, v.script = \
                 intercept(venv, v.execution_command, os.path.splitext(v.script)[0],
-                          jar, pip_options)
+                          jar, pip_options, logdir)
 
         if len(parallelism):
             raise ValueError(
                 'Parallelism settings error: There are no components named: %s' %
                 ','.join(parallelism.keys()))
-        
+
         # Build the Thrift topology object and serialize it to the .jar. Must do
         # this *after* the intercept step above since that step may modify the
         # topology definition.
@@ -137,7 +137,7 @@ petrel.host: %s
             # Undo our sys.path change.
             sys.path[:] = sys.path[1:]
 
-def intercept(venv, execution_command, script, jar, pip_options):
+def intercept(venv, execution_command, script, jar, pip_options, logdir):
     #create_virtualenv = 1 if execution_command == EmitterBase.DEFAULT_PYTHON else 0
     create_virtualenv = 1 if venv is None else 0
     script_base_name = os.path.splitext(script)[0]
@@ -147,8 +147,8 @@ def intercept(venv, execution_command, script, jar, pip_options):
     add_to_jar(jar, intercept_script, '''#!/bin/bash
 set -e
 SCRIPT=%(script)s
-LOG=$PWD/petrel$$_$SCRIPT.log
-VENV_LOG=$PWD/petrel$$_virtualenv.log
+LOG=%(logdir)s/petrel$$_$SCRIPT.log
+VENV_LOG=%(logdir)s/petrel$$_virtualenv.log
 echo "Beginning task setup" >>$LOG 2>&1
 
 # I've seen Storm Supervisor crash repeatedly if we create any new
@@ -264,6 +264,7 @@ exec python -m petrel.run $SCRIPT $LOG
     minor=sys.version_info.minor,
     script=script,
     venv='$WRKDIR/venv' if venv is None else venv,
+    logdir='$PWD' if logdir is None else logdir,
     create_virtualenv=create_virtualenv,
     thrift_version=pkg_resources.get_distribution("thrift").version,
     pip_options=pip_options,
