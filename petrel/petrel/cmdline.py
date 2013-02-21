@@ -64,7 +64,7 @@ def main():
     parser_submit.add_argument('--venv', dest='venv',
                         help='An existing virtual environment to reuse on the server')
     parser_submit.add_argument('--logdir', dest='logdir',
-                        help='Root directory for logfiles (default: the storm supervisor directory')
+                        help='Root directory for logfiles (default: the storm supervisor directory)')
     parser_submit.add_argument('name', const=None, nargs='?',
         help='name of the topology. If provided, the topology is submitted to the cluster. ' +
         'If omitted, the topology runs in local mode.')
