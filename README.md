@@ -10,7 +10,7 @@ Overview
 
 Petrel offers some important improvements over the storm.py module provided with Storm:
 
-* Topologies are implemented in 100% Python (using the generic JVMPetrel jar)
+* Topologies are implemented in 100% Python
 * Petrel's packaging support automatically sets up a Python virtual environment for your topology and makes it easy to install additional Python packages.
 * "petrel.mock" allows testing of single components or single chains of related components.
 * Petrel automatically sets up logging for every spout or bolt and logs a stack trace on unhandled errors.
@@ -28,6 +28,46 @@ def create(builder):
     builder.setBolt("split", splitsentence.SplitSentenceBolt(), 1).shuffleGrouping("spout")
     builder.setBolt("count", wordcount.WordCountBolt(), 1).fieldsGrouping("split", ["word"])
 </pre>
+
+setup.sh
+--------
+
+A topology may optionally include a setup.sh script. If present, Petrel will execute it before launching the spout or bolt. Typically this script is used for installing additional Python libraries. Here's an example setup.sh script:
+
+<pre>
+set -e
+
+# $1 will be non-zero if creating a new virtualenv, zero if reusing an existing one.
+if [ $1 -ne 0 ]; then
+    for f in Shapely==1.2.15 pyproj==1.9.0 pycassa==1.7.0 \
+             configobj==4.7.2 greenlet==0.4.0 gevent==1.0b3
+    do
+        echo "Installing $f"
+        pip install $f
+    done
+fi
+</pre>
+
+Topology Configuration
+----------------------
+
+Petrel's "--config" parameter accepts a YAML file with standard Storm configuration options. Petre also provides some Petrel-specific settings. See below.
+
+```
+topology.message.timeout.secs: 150
+topology.ackers: 1
+topology.workers: 5
+topology.max.spout.pending: 1
+worker.childopts: "-Xmx4096m"
+topology.worker.childopts: "-Xmx4096m"
+
+# Controls how Petrel installs its own dependencies, e.g. simplejson, thrift, PyYAML.
+petrel.pip_options: "--no-index -f http://10.255.3.20/pip/"
+
+# If you prefer, you can configure parallelism here instead of in setSpout() or
+# setBolt().
+petrel.parallelism.splitsentence: 1
+```
 
 Building and submitting topologies
 ==================================
