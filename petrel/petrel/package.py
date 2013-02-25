@@ -227,7 +227,7 @@ if [ $CREATE_VENV -ne 0 ]; then
             pip install %(pip_options)s $f >>$VENV_LOG 2>&1
         done
 
-        easy_install petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
+        easy_install *-py$PYVER.egg >>$VENV_LOG 2>&1
         if [ -f ./setup.sh ]; then
             /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
         fi
@@ -245,7 +245,7 @@ else
     else
         echo "Updating pre-existing venv: $VENV" >>$LOG 2>&1
         source $VENV/bin/activate >>$LOG 2>&1
-        easy_install -U petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
+        easy_install -U *-py$PYVER.egg >>$VENV_LOG 2>&1
         if [ -f ./setup.sh ]; then
             /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
         fi
