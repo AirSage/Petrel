@@ -164,8 +164,25 @@ License
 
 The use and distribution terms for this software are covered by the BSD 3-clause license 1.0 (http://opensource.org/licenses/BSD-3-Clause) which can be found in the file LICENSE.txt at the root of this distribution. By using this software in any fashion, you are agreeing to be bound by the terms of this license. You must not remove this notice, or any other, from this software.
 
-Instructions for building from source
-=====================================
+Installing Petrel as an egg
+===========================
+
+Before installing Petrel, make sure Storm is installed and in your path. Run the following command:
+
+    storm version
+    
+This will print the version of Storm active on your system, a number such as "0.7.4". You must use a version of Petrel whose first 3 digits match this version.
+
+Install the egg:
+
+easy_install petrel*.egg
+
+This will download a few dependencies and then print a message like:
+
+    Finished processing dependencies for petrel==0.7.4.0.1
+
+Setting up Petrel from source
+=============================
 
 If you plan to use use Petrel by cloning its source code repository from github.com, follow these instructions.
 
@@ -183,25 +200,6 @@ Clone Petrel from github. Then run:
 
     cd Petrel/petrel
     python setup.py develop
-
-This will download a few dependencies and then print a message like:
-
-    Finished processing dependencies for petrel==0.7.4.0.1
-
-Setting up Petrel from an egg
-=============================
-
-Soon Petrel will be available as a download from the Python Package Index (pypi). If you plan to install Petrel from PyPi, follow these instructions.
-
-First, make sure a version of "storm" is installed and in your path:
-
-    storm version
-    
-This should print a number such as "0.7.4". Download the latest Petrel egg file that begins with these digits.
-
-Install the egg:
-
-easy_install petrel*.egg
 
 This will download a few dependencies and then print a message like:
 
