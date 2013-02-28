@@ -382,8 +382,7 @@ class BasicBolt(Task):
         global MODE
         MODE = Bolt
         global ANCHOR_TUPLE
-        conf, context = initComponent()
-        self.initialize(conf, context)
+        self.shared_initialize()
         profiler = self.profiler
         try:
             while True:
