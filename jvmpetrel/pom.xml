@@ -100,6 +100,28 @@
 				<activeByDefault>false</activeByDefault>
 	                        <property>
 					<name>storm_version</name>
+					<value>0.8.1</value>
+				</property>
+			</activation>
+			<build>
+				<finalName>storm-petrel-0.8.1-SNAPSHOT</finalName>
+			</build>
+			<id>storm0.8.1</id>
+			<dependencies>
+				<dependency>
+					<groupId>storm</groupId>
+					<artifactId>storm-lib</artifactId>
+					<version>0.8.1</version>
+					<!-- keep storm out of the jar-with-dependencies -->
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+	                        <property>
+					<name>storm_version</name>
 					<value>0.8.2</value>
 				</property>
 			</activation>
