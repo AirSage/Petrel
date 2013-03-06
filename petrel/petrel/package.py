@@ -75,7 +75,8 @@ def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None
                 # Ignore blank and comment lines.
                 fn = fn.strip()
                 if len(fn) and not fn.startswith('#'):
-                    add_file_to_jar(jar, fn.strip())
+
+                    add_file_to_jar(jar, os.path.expandvars(fn.strip()))
 
         # Add user and machine information to the jar.
         add_to_jar(jar, '__submitter__.yaml', '''
