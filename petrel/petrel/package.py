@@ -188,6 +188,10 @@ python$PYVER -c "print" >>$LOG 2>&1
 # subdirectory. Thus they have different lock files but are creating the same
 # virtualenv. This causes multiple tasks to get into the lock before the
 # virtualenv has all the libraries installed.
+set +e
+which flock
+has_flock=$?
+set -e
 LOCKFILE="/tmp/petrel-$TOPOLOGY_ID.lock"
 LOCKFD=99
 # PRIVATE
@@ -195,7 +199,10 @@ _lock()             { flock -$1 $LOCKFD; }
 _no_more_locking()  { _lock u; _lock xn && rm -f $LOCKFILE; }
 _prepare_locking()  { eval "exec $LOCKFD>\\"$LOCKFILE\\""; trap _no_more_locking EXIT; }
 # ON START
-_prepare_locking
+if [ "$has_flock" -eq "0" ]
+then
+    _prepare_locking
+fi
 # PUBLIC
 exlock_now()        { _lock xn; }  # obtain an exclusive lock immediately or fail
 exlock()            { _lock x; }   # obtain an exclusive lock
@@ -203,17 +210,26 @@ shlock()            { _lock s; }   # obtain a shared lock
 unlock()            { _lock u; }   # drop a lock
 
 if [ $CREATE_VENV -ne 0 ]; then
-    if [ -d $VENV ];then
-        echo "Using existing venv: $VENV" >>$LOG 2>&1
-        shlock
-        source $VENV/bin/activate >>$LOG 2>&1
-        unlock
-    elif ! exlock_now;then
-        echo "Using existing venv: $VENV" >>$LOG 2>&1
-        shlock
-        source $VENV/bin/activate >>$LOG 2>&1
-        unlock
-    else
+    # On Mac OS X, the "flock" command is not available
+    create_new=1
+    if [ "$has_flock" -eq "0" ]
+    then 
+        if [ -d $VENV ];then
+            echo "Using existing venv: $VENV" >>$LOG 2>&1
+            shlock
+            source $VENV/bin/activate >>$LOG 2>&1
+            unlock
+            create_new=0
+        elif ! exlock_now;then
+            echo "Using existing venv: $VENV" >>$LOG 2>&1
+            shlock
+            source $VENV/bin/activate >>$LOG 2>&1
+            unlock
+            create_new=0
+        fi
+    fi
+    if [ "$create_new" -eq "1" ]
+    then
         echo "Creating new venv: $VENV" >>$LOG 2>&1
         virtualenv --system-site-packages --python python$PYVER $VENV >>$VENV_LOG 2>&1
         source $VENV/bin/activate >>$VENV_LOG 2>&1
@@ -232,7 +248,10 @@ if [ $CREATE_VENV -ne 0 ]; then
         if [ -f ./setup.sh ]; then
             /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
         fi
-        unlock
+        if [ "$has_flock" -eq "0" ]
+        then 
+            unlock
+        fi
     fi
 else
     # This is a prototype feature where the topology specifies a virtualenv
