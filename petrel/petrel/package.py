@@ -189,7 +189,7 @@ python$PYVER -c "print" >>$LOG 2>&1
 # virtualenv. This causes multiple tasks to get into the lock before the
 # virtualenv has all the libraries installed.
 set +e
-which flock
+which flock >>$LOG 2>&1
 has_flock=$?
 set -e
 LOCKFILE="/tmp/petrel-$TOPOLOGY_ID.lock"
