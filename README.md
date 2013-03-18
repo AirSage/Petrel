@@ -189,11 +189,11 @@ If you plan to use use Petrel by cloning its source code repository from github.
 Ensure the following tools are installed:
 
 * Storm
-** Test with "storm version"
-** Should print something like "0.7.4"
+    * Test with "storm version"
+    * Should print something like "0.7.4"
 * Thrift compiler
-** Test with "thrift -version"
-** Should print "Thrift version 0.7.0"
+    * Test with "thrift -version"
+    * Should print "Thrift version 0.7.0"
 * Maven (test with "mvn -version")
 
 Clone Petrel from github. Then run:

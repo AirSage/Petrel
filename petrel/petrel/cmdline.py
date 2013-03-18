@@ -7,8 +7,6 @@ import subprocess
 import pkg_resources
 import yaml
 
-import shlex
-
 from .util import read_yaml
 from .package import build_jar
 from .emitter import EmitterBase
@@ -24,16 +22,7 @@ def get_sourcejar():
         'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % storm_version)
     return sourcejar
 
-def runProcess(exe):    
-    p = subprocess.Popen(exe, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    while(True):
-        retcode = p.poll() #returns None while subprocess is running
-        line = p.stdout.readline()
-        yield line
-        if(retcode is not None):
-            break
-
-def submit(sourcejar, destjar, config, venv=None, name=None, definition=None, logdir=None,extrastormcp=""):
+def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastormcp):
     # Build a topology jar and submit it to Storm.
     if not sourcejar:
         sourcejar = get_sourcejar()
@@ -44,19 +33,20 @@ def submit(sourcejar, destjar, config, venv=None, name=None, definition=None, lo
         definition=definition,
         venv=venv,
         logdir=logdir)
-    # submit_args = [''] + shlex.split(stormargs) + ['jar', destjar, 'storm.petrel.GenericTopology']
-    stormClassPath = "".join([x for x in runProcess(["storm","classpath"])])
-    submit_args = ['']
-    submit_args += [
+    storm_class_path = [ subprocess.check_output(["storm","classpath"]).strip(), destjar ]
+    if extrastormcp is not None:
+        storm_class_path = [ extrastormcp ] + storm_class_path
+    storm_home = os.path.dirname(os.path.dirname(
+        subprocess.check_output(['which', 'storm'])))
+    submit_args = [
+        "",
         "-client",
         "-Dstorm.options=",
-        "-Dstorm.home=/usr/local/storm-0.8.1",
-        "-Djava.library.path=/usr/local/lib:/opt/local/lib:/usr/lib",
-        "-cp",":".join([extrastormcp,stormClassPath.strip(),destjar]),
-        "".join(["-Dstorm.jar=",destjar]),"storm.petrel.GenericTopology",
+        "-Dstorm.home=%s" % storm_home,
+        "-cp",":".join(storm_class_path),
+        "-Dstorm.jar=%s" % destjar,
+        "storm.petrel.GenericTopology",
     ]
-    # print submit_args
-    # print "Storm submit args: ", submit_args
     if name:
         submit_args += [name]
     os.execvp('java', submit_args)
