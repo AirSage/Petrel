@@ -35,7 +35,7 @@ def build_petrel():
     old_cwd = os.getcwd()
     os.chdir('petrel/generated')
     
-    subprocess.check_call(['thrift', '-gen', 'py', '-out', '.', '../../storm.thrift'])    
+    subprocess.check_call(['thrift', '-gen', 'py', '-o', '.', '../../storm.thrift'])    
     os.chdir(old_cwd)
     os.remove('storm.thrift')
     
