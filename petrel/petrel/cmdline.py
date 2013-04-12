@@ -22,7 +22,7 @@ def get_sourcejar():
         'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % storm_version)
     return sourcejar
 
-def submit(sourcejar, destjar, config, venv=None, name=None, definition=None, logdir=None):
+def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastormcp):
     # Build a topology jar and submit it to Storm.
     if not sourcejar:
         sourcejar = get_sourcejar()
@@ -33,11 +33,23 @@ def submit(sourcejar, destjar, config, venv=None, name=None, definition=None, lo
         definition=definition,
         venv=venv,
         logdir=logdir)
-    submit_args = ['', 'jar', destjar, 'storm.petrel.GenericTopology']
-    
+    storm_class_path = [ subprocess.check_output(["storm","classpath"]).strip(), destjar ]
+    if extrastormcp is not None:
+        storm_class_path = [ extrastormcp ] + storm_class_path
+    storm_home = os.path.dirname(os.path.dirname(
+        subprocess.check_output(['which', 'storm'])))
+    submit_args = [
+        "",
+        "-client",
+        "-Dstorm.options=",
+        "-Dstorm.home=%s" % storm_home,
+        "-cp",":".join(storm_class_path),
+        "-Dstorm.jar=%s" % destjar,
+        "storm.petrel.GenericTopology",
+    ]
     if name:
         submit_args += [name]
-    os.execvp('storm', submit_args)
+    os.execvp('java', submit_args)
 
 def kill(name, config):
     config = read_yaml(config)
@@ -65,6 +77,8 @@ def main():
                         help='An existing virtual environment to reuse on the server')
     parser_submit.add_argument('--logdir', dest='logdir',
                         help='Root directory for logfiles (default: the storm supervisor directory)')
+    parser_submit.add_argument('--extrastormcp', dest='extrastormcp',
+                        help='Extra jars on the storm classpath, useful for controlling log4j')
     parser_submit.add_argument('name', const=None, nargs='?',
         help='name of the topology. If provided, the topology is submitted to the cluster. ' +
         'If omitted, the topology runs in local mode.')

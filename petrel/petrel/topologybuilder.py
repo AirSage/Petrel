@@ -144,6 +144,9 @@ class _BoltGetter(object):
         self._owner = owner
         self._boltId = boltId
 
+    def allGrouping(self, componentId, streamId='default'):
+        return self.grouping(componentId, 'all', NullStruct(), streamId)
+
     def fieldsGrouping(self, componentId, fields, streamId='default'):
         return self.grouping(componentId, 'fields', fields, streamId)
 

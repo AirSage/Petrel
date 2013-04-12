@@ -134,6 +134,34 @@ Petrel also has a "StormHandler" class sends messages to the Storm logger. This 
 </pre>
 
 
+Storm Logging
+=============
+
+When running Petrel applications in Storm's local mode, the console output is a mixture of Petrel and Storm logging output. This results in a lot of messages and can be hard to follow. You can control the Storm logging output by using Petrel's "--extrastormcp" option. Any directories specified to this option will be prepended to Storm's Java class path.
+
+For example, create a file log4j.properties in the samples/wordcount directory, with the following contents:
+
+```
+# Set root logger level to DEBUG and its only appender to A1.
+log4j.rootLogger=DEBUG, A1
+#
+## A1 is set to be a ConsoleAppender
+log4j.appender.A1=org.apache.log4j.ConsoleAppender
+#
+## A1 uses PatternLayout.
+log4j.appender.A1.layout=org.apache.log4j.PatternLayout
+log4j.appender.A1.layout.ConversionPattern=[%d{dd MMM yyyy HH:mm:ss}] [%t] %-5p %c %x - %m%n
+log4j.logger.org.apache=ERROR
+log4j.logger.backtype=ERROR
+log4j.logger.com.netflix=ERROR
+```
+
+Now run "petrel submit" like this:
+
+```petrel submit --extrastormcp=`pwd` --config=topology.yaml ```
+
+With this setting, the apache, backtype, and netflix logs will be configured at ERROR level, suppressing most of the logger messages from Storm.
+
 Testing
 =======
 
@@ -189,11 +217,11 @@ If you plan to use use Petrel by cloning its source code repository from github.
 Ensure the following tools are installed:
 
 * Storm
-** Test with "storm version"
-** Should print something like "0.7.4"
+    * Test with "storm version"
+    * Should print something like "0.7.4"
 * Thrift compiler
-** Test with "thrift -version"
-** Should print "Thrift version 0.7.0"
+    * Test with "thrift -version"
+    * Should print "Thrift version 0.7.0"
 * Maven (test with "mvn -version")
 
 Clone Petrel from github. Then run:
