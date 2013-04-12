@@ -1,26 +1,28 @@
 import unittest
 from cStringIO import StringIO
 
-from petrel.topologybuilder import TopologyBuilder, BaseRichSpout, BaseRichBolt
+from petrel.topologybuilder import TopologyBuilder
+from petrel.emitter import Spout, BasicBolt
+
 from petrel.generated.storm.ttypes import Bolt, SpoutSpec
 
-class RandomSentenceSpout(BaseRichSpout):
+class RandomSentenceSpout(Spout):
     def __init__(self, execution_command=None):
-        super(RandomSentenceSpout, self).__init__(script='randomsentence.py', execution_command=execution_command)
+        super(RandomSentenceSpout, self).__init__(script='randomsentence.py')
 
     def declareOutputFields(self):
         return ['sentence']
 
-class SplitSentence(BaseRichBolt):
+class SplitSentence(BasicBolt):
     def __init__(self, execution_command=None):
-        super(SplitSentence, self).__init__(script='splitsentence.py', execution_command=execution_command)
+        super(SplitSentence, self).__init__(script='splitsentence.py')
 
     def declareOutputFields(self):
         return ['word']
 
-class WordCount(BaseRichBolt):
+class WordCount(BasicBolt):
     def __init__(self, execution_command=None):
-        super(WordCount, self).__init__(script='wordcount.py', execution_command=execution_command)
+        super(WordCount, self).__init__(script='wordcount.py')
 
     def declareOutputFields(self):
         return ['word', 'count']
@@ -46,22 +48,25 @@ class TestTopology(unittest.TestCase):
         self.assertEqual(['count', 'split'], sorted(topology.bolts.keys()))
 
         spout = topology.spouts['spout']
-        self.assertEqual('python', spout.spout_object.shell.execution_command)
+        self.assertEqual('python2.7', spout.spout_object.shell.execution_command)
         self.assertEqual('randomsentence.py', spout.spout_object.shell.script)
         self.assertEqual(['default'], sorted(spout.common.streams.keys()))
         self.assertEqual(['sentence'], spout.common.streams['default'].output_fields)
         self.assertEqual(False, spout.common.streams['default'].direct)
 
         bolt = topology.bolts['split']
-        self.assertEqual('python', bolt.bolt_object.shell.execution_command)
+        self.assertEqual('python2.7', bolt.bolt_object.shell.execution_command)
         self.assertEqual('splitsentence.py', bolt.bolt_object.shell.script)
         self.assertEqual(['default'], sorted(bolt.common.streams.keys()))
         self.assertEqual(['word'], bolt.common.streams['default'].output_fields)
         self.assertEqual(False, bolt.common.streams['default'].direct)
 
         bolt = topology.bolts['count']
-        self.assertEqual('python', bolt.bolt_object.shell.execution_command)
+        self.assertEqual('python2.7', bolt.bolt_object.shell.execution_command)
         self.assertEqual('wordcount.py', bolt.bolt_object.shell.script)
         self.assertEqual(['default'], sorted(bolt.common.streams.keys()))
-        self.assertEqual(['count'], bolt.common.streams['default'].output_fields)
+        self.assertEqual(['word', 'count'], bolt.common.streams['default'].output_fields)
         self.assertEqual(False, bolt.common.streams['default'].direct)
+
+if __name__ == '__main__':
+    unittest.main()
