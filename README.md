@@ -75,10 +75,14 @@ Building and submitting topologies
 Use the following command to package and submit a topology to Storm:
 
 <pre>
-petrel submit --sourcejar ../../jvmpetrel/target/storm-petrel-*-SNAPSHOT.jar --config localhost.yaml wordcount
+petrel submit --sourcejar ../../jvmpetrel/target/storm-petrel-*-SNAPSHOT.jar --config localhost.yaml
 </pre>
 
-This command builds and submits a topology.
+The above command builds and submits a topology in local mode. This mode is useful for simple development and testing. If you want to run the topology on a real Storm cluster (with Nimbus), run the following command instead:
+
+<pre>
+petrel submit --sourcejar ../../jvmpetrel/target/storm-petrel-*-SNAPSHOT.jar --config localhost.yaml wordcount
+</pre>
 
 Build
 -----
