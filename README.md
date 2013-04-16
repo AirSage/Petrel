@@ -15,6 +15,62 @@ Petrel offers some important improvements over the storm.py module provided with
 * "petrel.mock" allows testing of single components or single chains of related components.
 * Petrel automatically sets up logging for every spout or bolt and logs a stack trace on unhandled errors.
 
+Installation
+============
+
+Installing Petrel as an egg
+---------------------------
+
+Before installing Petrel, make sure Storm is installed and in your path. Run the following command:
+
+    storm version
+    
+This will print the version of Storm active on your system, a number such as "0.7.4". You must use a version of Petrel whose first 3 digits match this version.
+
+Install the egg:
+
+easy_install petrel*.egg
+
+This will download a few dependencies and then print a message like:
+
+    Finished processing dependencies for petrel==0.7.4.0.1
+
+Installing Petrel from source
+-----------------------------
+
+If you plan to use use Petrel by cloning its source code repository from github.com, follow these instructions.
+
+Ensure the following tools are installed:
+
+* Storm
+    * Test with "storm version"
+    * Should print something like "0.7.4"
+* Thrift compiler
+    * Test with "thrift -version"
+    * Should print "Thrift version 0.7.0"
+* Maven (test with "mvn -version")
+
+Clone Petrel from github. Then run:
+
+    cd Petrel/petrel
+    python setup.py develop
+
+This will download a few dependencies and then print a message like:
+
+    Finished processing dependencies for petrel==0.7.4.0.1
+
+Running the word count example
+==============================
+
+From the base Petrel directory, run:
+
+    cd samples/wordcount
+    ./buildandrun --config topology.yaml
+
+This will run the topology in local mode. You can run it on a real cluster by providing an additional parameter, the name of the topology:
+
+    ./buildandrun --config topology.yaml wordcount
+
 Topology definition
 ===================
 
@@ -29,27 +85,8 @@ def create(builder):
     builder.setBolt("count", wordcount.WordCountBolt(), 1).fieldsGrouping("split", ["word"])
 </pre>
 
-setup.sh
---------
-
-A topology may optionally include a setup.sh script. If present, Petrel will execute it before launching the spout or bolt. Typically this script is used for installing additional Python libraries. Here's an example setup.sh script:
-
-<pre>
-set -e
-
-# $1 will be non-zero if creating a new virtualenv, zero if reusing an existing one.
-if [ $1 -ne 0 ]; then
-    for f in Shapely==1.2.15 pyproj==1.9.0 pycassa==1.7.0 \
-             configobj==4.7.2 greenlet==0.4.0 gevent==1.0b3
-    do
-        echo "Installing $f"
-        pip install $f
-    done
-fi
-</pre>
-
 Topology Configuration
-----------------------
+======================
 
 Petrel's "--config" parameter accepts a YAML file with standard Storm configuration options. Petre also provides some Petrel-specific settings. See below.
 
@@ -143,7 +180,6 @@ Petrel also has a "StormHandler" class sends messages to the Storm logger. This 
 #logging.StormHandler = StormHandler
 </pre>
 
-
 Storm Logging
 =============
 
@@ -202,55 +238,22 @@ License
 
 The use and distribution terms for this software are covered by the BSD 3-clause license 1.0 (http://opensource.org/licenses/BSD-3-Clause) which can be found in the file LICENSE.txt at the root of this distribution. By using this software in any fashion, you are agreeing to be bound by the terms of this license. You must not remove this notice, or any other, from this software.
 
-Installing Petrel as an egg
-===========================
+setup.sh
+--------
 
-Before installing Petrel, make sure Storm is installed and in your path. Run the following command:
+A topology may optionally include a setup.sh script. If present, Petrel will execute it before launching the spout or bolt. Typically this script is used for installing additional Python libraries. Here's an example setup.sh script:
 
-    storm version
-    
-This will print the version of Storm active on your system, a number such as "0.7.4". You must use a version of Petrel whose first 3 digits match this version.
+<pre>
+set -e
 
-Install the egg:
+# $1 will be non-zero if creating a new virtualenv, zero if reusing an existing one.
+if [ $1 -ne 0 ]; then
+    for f in Shapely==1.2.15 pyproj==1.9.0 pycassa==1.7.0 \
+             configobj==4.7.2 greenlet==0.4.0 gevent==1.0b3
+    do
+        echo "Installing $f"
+        pip install $f
+    done
+fi
+</pre>
 
-easy_install petrel*.egg
-
-This will download a few dependencies and then print a message like:
-
-    Finished processing dependencies for petrel==0.7.4.0.1
-
-Setting up Petrel from source
-=============================
-
-If you plan to use use Petrel by cloning its source code repository from github.com, follow these instructions.
-
-Ensure the following tools are installed:
-
-* Storm
-    * Test with "storm version"
-    * Should print something like "0.7.4"
-* Thrift compiler
-    * Test with "thrift -version"
-    * Should print "Thrift version 0.7.0"
-* Maven (test with "mvn -version")
-
-Clone Petrel from github. Then run:
-
-    cd Petrel/petrel
-    python setup.py develop
-
-This will download a few dependencies and then print a message like:
-
-    Finished processing dependencies for petrel==0.7.4.0.1
-
-Running the word count example
-==============================
-
-From the base Petrel directory, run:
-
-    cd samples/wordcount
-    ./buildandrun --config topology.yaml
-
-This will run the topology in local mode. You can run it on a real cluster by providing an additional parameter, the name of the topology:
-
-    ./buildandrun --config topology.yaml wordcount
