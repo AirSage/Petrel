@@ -49,6 +49,9 @@ class TopologyBuilder(object):
         self._initCommon(id, spout, parallelism_hint);
         self._spouts[id] = spout
 
+    def addOutputStream(self, id, streamId, output_fields, direct=False):
+        self._commons[id].streams[streamId] = StreamInfo(output_fields, direct=direct)
+
     def createTopology(self):
         boltSpecs = {}
         spoutSpecs = {}
