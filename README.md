@@ -5,6 +5,15 @@ Tools for writing, submitting, debugging, and monitoring Storm topologies in pur
 
 NOTE: Unlike the base Storm package, which only requires Python 2.6, Petrel requires Python 2.7.
 
+Other requirements:
+
+* Python packages
+** simplejson
+** thrift
+** PyYAML
+* System packages
+** libyaml (PyYAML requires the development libraries)
+
 Overview
 ========
 
@@ -162,9 +171,16 @@ petrel status 10.255.1.58
 Logging
 =======
 
-Petrel redirects stdout and stderr to the Python logger.
+Petrel does not write to the standard Storm logs. Instead it creates its own set of logs underneath the topology directory. For example, if you are running a topology in local mode, you'll find the Petrel log in a subdirectory of the "storm.local.dir" directory (whose location you can find in the Storm log). For example:
 
-When Storm is running on a cluster, it can be nice to send certain messages (e.g. errors) to a central machine. Petrel provides the NIMBUS_HOST environment variable to help support this. For example, the following configuration declares a log handler which sends any worker log messages INFO or higher to the Nimbus host.
+./supervisor/stormdist/test+topology-1-1365766701/resources/petrel28289_randomsentence.log
+./supervisor/stormdist/test+topology-1-1365766701/resources/petrel28281_virtualenv.log
+./supervisor/stormdist/test+topology-1-1365766701/resources/petrel28281_wordcount.log
+./supervisor/stormdist/test+topology-1-1365766701/resources/petrel28285_splitsentence.log
+
+Petrel uses stdout to send JSON data to Storm. Any other code that writes to stdout (e.g. "print" statements) would cause the Storm worker to crash. In order to avoid this, Petrel automatically reassigns sys.stdout and sys.stderr so they write to the Petrel (i.e. Python) logger instead.
+
+When Storm is running on a cluster, it can be useful to send certain messages (e.g. errors) to a central machine. To help support this, Petrel sets an environment variable "NIMBUS_HOST". For example, the following log file configuration declares a log handler which sends any worker log messages INFO or higher to the Nimbus host.
 
 <pre>
 [handler_hand02]
@@ -174,7 +190,7 @@ formatter=form02
 args=((os.getenv('NIMBUS_HOST') or 'localhost',handlers.SYSLOG_UDP_PORT),handlers.SysLogHandler.LOG_USER)
 </pre>
 
-Petrel also has a "StormHandler" class sends messages to the Storm logger. This feature is currently not "released", but can be enabled by uncommenting the following line in petrel/util.py:
+Petrel also has a "StormHandler" class sends messages to the Storm logger. This feature has not been thoroughly tested, but can be enabled by uncommenting the following line in petrel/util.py:
 
 <pre>
 #logging.StormHandler = StormHandler
