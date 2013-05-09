@@ -73,10 +73,10 @@ setup(name=PACKAGE
     ,package_data={'': ['*.jar']}
     ,license='BSD 3-clause'
     ,install_requires=[
-        'simplejson>=2.6.0',
+        'simplejson==2.6.1',
         # Request specific Thrift version. Storm is in Java and may be sensitive to version incompatibilities.
         'thrift==0.8.0',
-        'PyYAML>=3.10',
+        'PyYAML==3.10',
     ]
     # Setting this flag makes Petrel easier to debug within a running topology.
     ,zip_safe=False)

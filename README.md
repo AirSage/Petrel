@@ -5,15 +5,6 @@ Tools for writing, submitting, debugging, and monitoring Storm topologies in pur
 
 NOTE: Unlike the base Storm package, which only requires Python 2.6, Petrel requires Python 2.7.
 
-Other requirements:
-
-* Python packages
-** simplejson
-** thrift
-** PyYAML
-* System packages
-** libyaml (PyYAML requires the development libraries)
-
 Overview
 ========
 
@@ -26,6 +17,16 @@ Petrel offers some important improvements over the storm.py module provided with
 
 Installation
 ============
+
+* System
+  * Python 2.7
+  * libyaml
+* Python packages (you install)
+    * virtualenv
+* Python packages (installed automatically by setup.py)
+    * simplejson 2.6.1
+    * thrift 0.8.0
+    * PyYAML 3.10
 
 Installing Petrel as an egg
 ---------------------------
