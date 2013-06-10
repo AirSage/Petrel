@@ -137,9 +137,10 @@ class TopologyBuilder(object):
         common.streams = {}
         if parallelism is not None:
             common.parallelism_hint = parallelism
-        conf = component.getComponentConfiguration()
-        if conf is not None:
-            common.json_conf = json.dumps(conf)
+        if hasattr(component, 'getComponentConfiguration'):
+            conf = component.getComponentConfiguration()
+            if conf is not None:
+                common.json_conf = json.dumps(conf)
         self._commons[id] = common
 
 class _BoltGetter(object):

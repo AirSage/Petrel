@@ -17,6 +17,10 @@ MANIFEST = 'manifest.txt'
 
 def add_to_jar(jar, name, data):
     path = 'resources/%s' % name
+    # sanity-check: prevent adding resources to jar multiple times
+    for zip_info in jar.filelist:
+        if zip_info.filename == path:
+            return
     print 'Adding %s' % path
     jar.writestr(path, data)
 
@@ -28,7 +32,7 @@ def add_file_to_jar(jar, directory, script=None, required=True):
     
     # Use glob() to allow for wildcards, e.g. in manifest.txt.
     path_list = glob.glob(path)
-
+    
     if len(path_list) == 0 and required:
         raise ValueError('No files found matching: %s' % path)
     #elif len(path_list) > 1:
@@ -36,7 +40,24 @@ def add_file_to_jar(jar, directory, script=None, required=True):
     for this_path in path_list:
         with open(this_path, 'r') as f:
             # Assumption: Drop the path when adding to the jar.
-            add_to_jar(jar, os.path.basename(this_path), f.read())
+            # add_to_jar(jar, os.path.basename(this_path), f.read())
+
+            # allow adding py files and directories, containing py files
+            path_ext = os.path.splitext(this_path)[-1]
+            if path_ext == '.py':
+                if os.path.isabs(this_path):
+                    # py files with absolute path are considered to be modules for 
+                    # the petrel.emitters and are added to the resources root
+                    jar_path = this_path[len(directory) + 1:]
+                else:
+                    # py files with relative path are considered to be defined in
+                    # manifest.txt are added respecting the python package structure
+                    jar_path = this_path
+            else:
+                jar_path = os.path.basename(this_path)
+            add_to_jar(jar, jar_path, f.read())
+
+
 
 def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None, logdir=None):
     """Build a StormTopology .jar which encapsulates the topology defined in
@@ -103,7 +124,10 @@ petrel.host: %s
 
         # Add Python scripts and any other per-script resources.
         for k, v in chain(builder._spouts.iteritems(), builder._bolts.iteritems()):
-            add_file_to_jar(jar, topology_dir, v.script)
+            # components inherited from petrel.storm does not have script property
+            # and should be added via manifest.txt
+            if hasattr(v, 'script'):
+                add_file_to_jar(jar, topology_dir, v.script)
 
             # Create a bootstrap script.
             if venv is not None:
@@ -117,9 +141,29 @@ petrel.host: %s
             if k in parallelism:
                 builder._commons[k].parallelism_hint = int(parallelism.pop(k))
 
-            v.execution_command, v.script = \
-                intercept(venv, v.execution_command, os.path.splitext(v.script)[0],
-                          jar, pip_options, logdir)
+
+            emitter = builder._spouts.get(k, None) or builder._bolts.get(k, None)
+            instance_of_emitter_base = isinstance(emitter, EmitterBase)
+
+            if instance_of_emitter_base:
+                v.execution_command, v.script = \
+                    intercept_petrel_emitter(venv, v.execution_command, \
+                        os.path.splitext(v.script)[0], jar, pip_options, logdir)
+            else:
+                import base64, pickle, re
+                module_name = '%s' % emitter.__module__
+                class_name = '%s' % emitter.__class__.__name__
+                
+                v.script = '%s@%s.%s' % (k, module_name, class_name)
+                v.script = re.sub('[\W]+', '_', k)
+                v.execution_command = EmitterBase.DEFAULT_PYTHON
+                
+                emitter = base64.b64encode(pickle.dumps(emitter))
+
+                v.execution_command, v.script = \
+                    intercept_storm_emitter(venv, v.execution_command, v.script, \
+                              jar, pip_options, logdir, \
+                              module_name, class_name, emitter)
 
         if len(parallelism):
             raise ValueError(
@@ -138,19 +182,39 @@ petrel.host: %s
             # Undo our sys.path change.
             sys.path[:] = sys.path[1:]
 
-def intercept(venv, execution_command, script, jar, pip_options, logdir):
-    #create_virtualenv = 1 if execution_command == EmitterBase.DEFAULT_PYTHON else 0
-    create_virtualenv = 1 if venv is None else 0
-    script_base_name = os.path.splitext(script)[0]
-    intercept_script = 'setup_%s.sh' % script_base_name
 
-    # Bootstrap script that sets up the worker's Python environment.
+def intercept_petrel_emitter(venv, execution_command, script, jar, pip_options, logdir):
+    """Creates a wrapper for petrel.emitter components"""
+    petrel_cmd = "python -m petrel.run $SCRIPT $LOG $MODULE"
+    return _intercept(venv, script, jar, pip_options, logdir, petrel_cmd)
+
+
+def intercept_storm_emitter(venv, execution_command, script, jar, pip_options, logdir, \
+    module_name, class_name, emitter_as_pkl):
+    """Creates a wrapper for petrel.storm components"""
+    petrel_cmd = "python -m petrel.run $SCRIPT $LOG $MODULE_NAME $CLASS_NAME $EMITTER_AS_PKL"
+    extra_vars = {
+        'MODULE_NAME': module_name,
+        'CLASS_NAME': class_name,
+        'EMITTER_AS_PKL': emitter_as_pkl,
+    }
+
+    return _intercept(venv, script, jar, pip_options, logdir, petrel_cmd, extra_vars)
+
+
+def _intercept(venv, script, jar, pip_options, logdir, petrel_cmd, extra_vars={}):
+    create_virtualenv = 1 if venv is None else 0
+    intercept_script = 'setup_%s.sh' % os.path.splitext(script)[0]
+    extra_vars = '\n'.join({'%s=%s' % (k, v) for k, v in extra_vars.iteritems()})
+
     add_to_jar(jar, intercept_script, '''#!/bin/bash
 set -e
 SCRIPT=%(script)s
 LOG=%(logdir)s/petrel$$_$SCRIPT.log
 VENV_LOG=%(logdir)s/petrel$$_virtualenv.log
 echo "Beginning task setup" >>$LOG 2>&1
+
+%(extra_vars)s
 
 # I've seen Storm Supervisor crash repeatedly if we create any new
 # subdirectories (e.g. Python virtualenvs) in the worker's "resources" (i.e.
@@ -275,19 +339,22 @@ fi
 
 ELAPSED=$(($SECONDS-$START))
 echo "Task setup took $ELAPSED seconds" >>$LOG 2>&1
-echo "Launching: python -m petrel.run $SCRIPT $LOG" >>$LOG 2>&1
+echo "Launching: %(petrel_cmd)s" >>$LOG 2>&1
 # We use exec to avoid creating another process. Creating a second process is
 # not only less efficient but also confuses the way Storm monitors processes.
-exec python -m petrel.run $SCRIPT $LOG
+exec %(petrel_cmd)s
 ''' % dict(
-    major=sys.version_info.major,
-    minor=sys.version_info.minor,
-    script=script,
-    venv='$WRKDIR/venv' if venv is None else venv,
-    logdir='$PWD' if logdir is None else logdir,
-    create_virtualenv=create_virtualenv,
-    thrift_version=pkg_resources.get_distribution("thrift").version,
-    pip_options=pip_options,
+        major=sys.version_info.major,
+        minor=sys.version_info.minor,
+        script=script,
+        venv='$WRKDIR/venv' if venv is None else venv,
+        logdir='$PWD' if logdir is None else logdir,
+        create_virtualenv=create_virtualenv,
+        thrift_version=pkg_resources.get_distribution("thrift").version,
+        pip_options=pip_options,
+        petrel_cmd=petrel_cmd,
+        extra_vars=extra_vars,
     ))
 
     return '/bin/bash', intercept_script
+
