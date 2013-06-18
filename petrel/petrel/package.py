@@ -151,6 +151,7 @@ petrel.host: %s
                         os.path.splitext(v.script)[0], jar, pip_options, logdir)
             else:
                 import base64, pickle, re
+                from operator import add
                 module_name = '%s' % emitter.__module__
                 class_name = '%s' % emitter.__class__.__name__
                 
@@ -159,11 +160,16 @@ petrel.host: %s
                 v.execution_command = EmitterBase.DEFAULT_PYTHON
                 
                 emitter = base64.b64encode(pickle.dumps(emitter))
+                
+                bootstrap = []
+                for bootstrap_cmpnt in builder._bootstrap:
+                    bootstrap.append(bootstrap_cmpnt)
+                bootstrap = base64.b64encode(pickle.dumps(bootstrap))
 
                 v.execution_command, v.script = \
                     intercept_storm_emitter(venv, v.execution_command, v.script, \
                               jar, pip_options, logdir, \
-                              module_name, class_name, emitter)
+                              module_name, class_name, emitter, bootstrap)
 
         if len(parallelism):
             raise ValueError(
@@ -190,13 +196,14 @@ def intercept_petrel_emitter(venv, execution_command, script, jar, pip_options, 
 
 
 def intercept_storm_emitter(venv, execution_command, script, jar, pip_options, logdir, \
-    module_name, class_name, emitter_as_pkl):
+    module_name, class_name, emitter_as_pkl, bootstrap_as_pkl):
     """Creates a wrapper for petrel.storm components"""
-    petrel_cmd = "python -m petrel.run $SCRIPT $LOG $MODULE_NAME $CLASS_NAME $EMITTER_AS_PKL"
+    petrel_cmd = "python -m petrel.run $SCRIPT $LOG $MODULE_NAME $CLASS_NAME $EMITTER_AS_PKL $BOOTSTRAP_AS_PKL"
     extra_vars = {
         'MODULE_NAME': module_name,
         'CLASS_NAME': class_name,
         'EMITTER_AS_PKL': emitter_as_pkl,
+        'BOOTSTRAP_AS_PKL': bootstrap_as_pkl,
     }
 
     return _intercept(venv, script, jar, pip_options, logdir, petrel_cmd, extra_vars)

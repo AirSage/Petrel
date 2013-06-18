@@ -69,7 +69,7 @@ class StormHandler(logging.Handler):
 #logging.StormHandler = StormHandler
 
 def main():
-    if len(sys.argv) not in (3, 6):
+    if len(sys.argv) not in (3, 7):
         print >> sys.stderr, "Usage: %s <module> <log file>" % os.path.splitext(os.path.basename(sys.argv[0]))[0]
         print >> sys.stderr, "Usage: %s <script> <log file> <module name> <class name> <base 64 pickled component>" % os.path.splitext(os.path.basename(sys.argv[0]))[0]
         sys.exit(1)
@@ -101,13 +101,12 @@ def main():
             module = __import__(module_name)
             getattr(module, 'run')()
         else:
-            import base64, pickle
-            emitter_module_name, emitter_class_name, emitter_as_pkl = sys.argv[3:]
-            # No need to import module - pickle handles this for us, 
-            # but will keep emitter_module_name, emitter_class_name for documentation/logging.
+            import base64, pickle, logging
+            _, _, emitter_as_pkl, bootstrap_as_pkl = sys.argv[3:]
 
-            # emitter_module = __import__(emitter_module_name, globals(), locals(), [''], -1)
-            # emitter_class = getattr(emitter_module, emitter_class_name)
+            bootstrap = pickle.loads(base64.b64decode(bootstrap_as_pkl))
+            for init_handler in bootstrap:
+                init_handler()
 
             emitter = pickle.loads(base64.b64decode(emitter_as_pkl))
             emitter.run()
