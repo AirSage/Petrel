@@ -12,8 +12,14 @@ from .package import build_jar
 from .emitter import EmitterBase
 from .status import status
 
+def get_storm_cmd():
+    storm_home = os.environ.get('STORM_HOME', None)
+    if storm_home:
+        return os.path.join(storm_home, 'bin', 'storm')
+    return 'storm' 
+
 def get_storm_version():
-    return subprocess.check_output(['storm', 'version']).strip()    
+    return subprocess.check_output([get_storm_cmd(), 'version']).strip()    
 
 def get_sourcejar():
     storm_version = get_storm_version()
@@ -22,7 +28,7 @@ def get_sourcejar():
         'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % storm_version)
     return sourcejar
 
-def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastormcp):
+def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastormcp, config_override={}):
     # Build a topology jar and submit it to Storm.
     if not sourcejar:
         sourcejar = get_sourcejar()
@@ -33,15 +39,19 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
         definition=definition,
         venv=venv,
         logdir=logdir)
-    storm_class_path = [ subprocess.check_output(["storm","classpath"]).strip(), destjar ]
+    storm_class_path = [ subprocess.check_output([get_storm_cmd(), 'classpath']).strip(), destjar ]
     if extrastormcp is not None:
         storm_class_path = [ extrastormcp ] + storm_class_path
     storm_home = os.path.dirname(os.path.dirname(
-        subprocess.check_output(['which', 'storm'])))
+        subprocess.check_output(['which', get_storm_cmd()])))
+    storm_options = ''
+    if config_override:
+        storm_options = ['%s=%s' % item for item in config_override.iteritems()]
+        storm_options = ','.join(storm_options).replace(' ', '%%%%')
     submit_args = [
         "",
         "-client",
-        "-Dstorm.options=",
+        "-Dstorm.options=%s" % storm_options,
         "-Dstorm.home=%s" % storm_home,
         "-cp",":".join(storm_class_path),
         "-Dstorm.jar=%s" % destjar,
@@ -60,7 +70,7 @@ def kill(name, config):
     kill_args = ['', 'kill', name]
     if nimbus_host:
         kill_args += ['-c', 'nimbus.host=%s' % nimbus_host]
-    os.execvp('storm', kill_args)
+    os.execvp(get_storm_cmd(), kill_args)
 
 def main():
     parser = argparse.ArgumentParser(prog='petrel', description='Petrel command line')

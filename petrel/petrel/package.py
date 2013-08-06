@@ -217,8 +217,8 @@ def _intercept(venv, script, jar, pip_options, logdir, petrel_cmd, extra_vars={}
     add_to_jar(jar, intercept_script, '''#!/bin/bash
 set -e
 SCRIPT=%(script)s
-LOG=%(logdir)s/petrel$$_$SCRIPT.log
-VENV_LOG=%(logdir)s/petrel$$_virtualenv.log
+LOG=%(logdir)s/petrel_%(script)s_$$.log
+VENV_LOG=%(logdir)s/petrel_virtualenv_$$.log
 echo "Beginning task setup" >>$LOG 2>&1
 
 %(extra_vars)s
@@ -342,6 +342,10 @@ else
         fi
         unlock
     fi
+fi
+
+if [ -f ./environment.sh ]; then
+    /bin/bash ./environment.sh >>$LOG 2>&1
 fi
 
 ELAPSED=$(($SECONDS-$START))

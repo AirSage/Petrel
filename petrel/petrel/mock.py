@@ -1,5 +1,5 @@
 from collections import deque, defaultdict, namedtuple
-
+import copy
 import storm
 
 python_id = id
@@ -61,6 +61,10 @@ class Mock(object):
         #return readTaskIds()
     
     def __emit(self, *args, **kwargs):
+        # clone args/kwargs to simulate serialization
+        argts = copy.deepcopy(args)
+        kwargs = copy.deepcopy(kwargs)
+
         if storm.MODE == storm.Bolt:
             self.emitBolt(*args, **kwargs)
         elif storm.MODE == storm.Spout:
