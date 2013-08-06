@@ -69,8 +69,9 @@ class StormHandler(logging.Handler):
 #logging.StormHandler = StormHandler
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3, 7):
         print >> sys.stderr, "Usage: %s <module> <log file>" % os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        print >> sys.stderr, "Usage: %s <script> <log file> <module name> <class name> <base 64 pickled component>" % os.path.splitext(os.path.basename(sys.argv[0]))[0]
         sys.exit(1)
 
     try:
@@ -78,7 +79,7 @@ def main():
         os.environ['PETREL_LOG_PATH'] = log_file_path = os.path.abspath(sys.argv[2])
         os.environ['SCRIPT'] = module_name = sys.argv[1]
         sys.excepthook = handle_exception
-    
+
         with open_log() as f:
             print >> f, '%s invoked with the following arguments: %s' % (sys.argv[0], repr(sys.argv[1:]))
             ver_info = sys.version_info
@@ -96,8 +97,21 @@ def main():
         storm.initialize_profiling()
         
         sys.path[:0] = [ os.getcwd() ]
-        module = __import__(module_name)
-        getattr(module, 'run')()
+        if len(sys.argv) == 3:
+            module = __import__(module_name)
+            getattr(module, 'run')()
+        else:
+            import base64, pickle, logging
+            _, _, emitter_as_pkl, bootstrap_as_pkl = sys.argv[3:]
+
+            bootstrap = pickle.loads(base64.b64decode(bootstrap_as_pkl))
+            for init_handler in bootstrap:
+                init_handler()
+
+            emitter = pickle.loads(base64.b64decode(emitter_as_pkl))
+            emitter.run()
+
+
         with open_log() as f:
             print >> f, 'Worker %s exiting normally.' % module_name
     except:

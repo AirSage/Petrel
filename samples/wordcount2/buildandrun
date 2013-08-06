@@ -1,0 +1,17 @@
+STORM_YAML=../wordcount/topology.yaml
+PETREL_JAR=../../jvmpetrel/target/storm-petrel-0.8.2-SNAPSHOT.jar
+DEST_JAR=/tmp/wordcount2/topology.jar
+TOPOLOGY_BUILDER=wordcount.create
+LOG_DIR=/tmp/wordcount2
+
+mkdir -p $LOG_DIR
+
+pushd ../../petrel &>/dev/null
+rm -rf dist
+python setup.py bdist_egg &>/dev/null
+popd &>/dev/null
+
+
+echo "Executing: petrel submit --sourcejar $PETREL_JAR --config $STORM_YAML --definition $TOPOLOGY_BUILDER --logdir $LOG_DIR --destjar $DEST_JAR"
+
+petrel submit --sourcejar $PETREL_JAR --config $STORM_YAML --definition $TOPOLOGY_BUILDER --logdir $LOG_DIR --destjar $DEST_JAR

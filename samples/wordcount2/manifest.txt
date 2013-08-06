@@ -1,0 +1,4 @@
+# Standard files for Petrel
+*.py
+../wordcount/logconfig.ini
+../../petrel/dist/petrel-*-py2.7.egg

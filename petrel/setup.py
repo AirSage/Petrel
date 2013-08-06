@@ -14,8 +14,15 @@ PACKAGE = "petrel"
 
 PETREL_VERSION = '0.1'
 
+def get_storm_cmd():
+    storm_home = os.environ.get('STORM_HOME', None)
+    print 'STORM_HOME %s' % storm_home
+    if storm_home:
+        return os.path.join(storm_home, 'bin', 'storm')
+    return 'storm' 
+
 def get_storm_version():
-    return subprocess.check_output(['storm', 'version']).strip()    
+    return subprocess.check_output([get_storm_cmd(), 'version']).strip()    
 
 def get_version(argv):
     """ Dynamically calculate the version based on VERSION."""

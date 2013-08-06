@@ -22,6 +22,7 @@ class TopologyBuilder(object):
         self._bolts = {}
         self._spouts = {}
         self._commons = {}
+        self._bootstrap = []
     
     #/**
     # * Define a new bolt in this topology with the specified amount of parallelism.
@@ -48,6 +49,11 @@ class TopologyBuilder(object):
         self._validateUnusedId(id);
         self._initCommon(id, spout, parallelism_hint);
         self._spouts[id] = spout
+
+
+    def addBootstrap(self, callback):
+        assert callable(callback)
+        self._bootstrap.append(callback)
 
     def addOutputStream(self, id, streamId, output_fields, direct=False):
         self._commons[id].streams[streamId] = StreamInfo(output_fields, direct=direct)
@@ -137,9 +143,10 @@ class TopologyBuilder(object):
         common.streams = {}
         if parallelism is not None:
             common.parallelism_hint = parallelism
-        conf = component.getComponentConfiguration()
-        if conf is not None:
-            common.json_conf = json.dumps(conf)
+        if hasattr(component, 'getComponentConfiguration'):
+            conf = component.getComponentConfiguration()
+            if conf is not None:
+                common.json_conf = json.dumps(conf)
         self._commons[id] = common
 
 class _BoltGetter(object):

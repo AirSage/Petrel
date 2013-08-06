@@ -1,5 +1,5 @@
 from collections import deque, defaultdict, namedtuple
-
+import copy
 import storm
 
 python_id = id
@@ -20,7 +20,13 @@ class MockSpout(storm.Spout):
 
     def nextTuple(self):
         if self.index < len(self.data):
-            storm.emit(self.data[self.index])
+            data = self.data[self.index]
+            if type(data) in (tuple, list):
+                storm.emit(data)
+            elif isinstance(data, dict):
+                values = data['values']
+                kwargs = {k:v for k,v in data.iteritems() if k is not 'values'}
+                storm.emit(values, **kwargs)
             self.index += 1
 
 class Mock(object):
@@ -55,6 +61,10 @@ class Mock(object):
         #return readTaskIds()
     
     def __emit(self, *args, **kwargs):
+        # clone args/kwargs to simulate serialization
+        argts = copy.deepcopy(args)
+        kwargs = copy.deepcopy(kwargs)
+
         if storm.MODE == storm.Bolt:
             self.emitBolt(*args, **kwargs)
         elif storm.MODE == storm.Spout:
