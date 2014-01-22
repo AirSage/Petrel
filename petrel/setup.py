@@ -57,7 +57,7 @@ if 'bdist_egg' in sys.argv or 'develop' in sys.argv:
 
 setup(name=PACKAGE
     ,version=get_version(sys.argv)
-    ,description=("Storm Topology Builder. AirSage, Inc")
+    ,description=("Storm Topology Builder")
     ,long_description=long_description
     ,classifiers=[
          "Programming Language :: Python"
