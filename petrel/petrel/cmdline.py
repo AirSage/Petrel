@@ -3,6 +3,7 @@ import sys
 import argparse
 import traceback
 import subprocess
+import re
 
 import pkg_resources
 import yaml
@@ -13,7 +14,10 @@ from .emitter import EmitterBase
 from .status import status
 
 def get_storm_version():
-    return subprocess.check_output(['storm', 'version']).strip()    
+    version = subprocess.check_output(['storm', 'version']).strip()
+    m = re.search('^\d\.\d\.\d', version)
+    return m.group(0)
+
 
 def get_sourcejar():
     storm_version = get_storm_version()

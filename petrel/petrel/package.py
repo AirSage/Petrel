@@ -183,93 +183,97 @@ fi
 # error and fail before continuing.
 python$PYVER -c "print" >>$LOG 2>&1
 
-# Create at most ONE virtualenv for the topology. Put the lock file in /tmp
-# because when running Storm in local mode, each task runs in a different
-# subdirectory. Thus they have different lock files but are creating the same
-# virtualenv. This causes multiple tasks to get into the lock before the
-# virtualenv has all the libraries installed.
-set +e
-which flock >>$LOG 2>&1
-has_flock=$?
-set -e
-LOCKFILE="/tmp/petrel-$TOPOLOGY_ID.lock"
-LOCKFD=99
-# PRIVATE
-_lock()             { flock -$1 $LOCKFD; }
-_no_more_locking()  { _lock u; _lock xn && rm -f $LOCKFILE; }
-_prepare_locking()  { eval "exec $LOCKFD>\\"$LOCKFILE\\""; trap _no_more_locking EXIT; }
-# ON START
-if [ "$has_flock" -eq "0" ]
-then
-    _prepare_locking
-fi
-# PUBLIC
-exlock_now()        { _lock xn; }  # obtain an exclusive lock immediately or fail
-exlock()            { _lock x; }   # obtain an exclusive lock
-shlock()            { _lock s; }   # obtain a shared lock
-unlock()            { _lock u; }   # drop a lock
 
-if [ $CREATE_VENV -ne 0 ]; then
-    # On Mac OS X, the "flock" command is not available
-    create_new=1
+unamestr=`uname`
+if [[ "$unamestr" != 'Darwin' ]]; then
+    # Create at most ONE virtualenv for the topology. Put the lock file in /tmp
+    # because when running Storm in local mode, each task runs in a different
+    # subdirectory. Thus they have different lock files but are creating the same
+    # virtualenv. This causes multiple tasks to get into the lock before the
+    # virtualenv has all the libraries installed.
+    set +e
+    which flock >>$LOG 2>&1
+    has_flock=$?
+    set -e
+    LOCKFILE="/tmp/petrel-$TOPOLOGY_ID.lock"
+    LOCKFD=99
+    # PRIVATE
+    _lock()             { flock -$1 $LOCKFD; }
+    _no_more_locking()  { _lock u; _lock xn && rm -f $LOCKFILE; }
+    _prepare_locking()  { eval "exec $LOCKFD>\\"$LOCKFILE\\""; trap _no_more_locking EXIT; }
+    # ON START
     if [ "$has_flock" -eq "0" ]
-    then 
-        if [ -d $VENV ];then
-            echo "Using existing venv: $VENV" >>$LOG 2>&1
-            shlock
-            source $VENV/bin/activate >>$LOG 2>&1
-            unlock
-            create_new=0
-        elif ! exlock_now;then
-            echo "Using existing venv: $VENV" >>$LOG 2>&1
-            shlock
-            source $VENV/bin/activate >>$LOG 2>&1
-            unlock
-            create_new=0
-        fi
-    fi
-    if [ "$create_new" -eq "1" ]
     then
-        echo "Creating new venv: $VENV" >>$LOG 2>&1
-        virtualenv --system-site-packages --python python$PYVER $VENV >>$VENV_LOG 2>&1
-        source $VENV/bin/activate >>$VENV_LOG 2>&1
+        _prepare_locking
+    fi
+    # PUBLIC
+    exlock_now()        { _lock xn; }  # obtain an exclusive lock immediately or fail
+    exlock()            { _lock x; }   # obtain an exclusive lock
+    shlock()            { _lock s; }   # obtain a shared lock
+    unlock()            { _lock u; }   # drop a lock
 
-        # Ensure the version of Thrift on the worker matches our version.
-        # This may not matter since Petrel only uses Thrift for topology build
-        # and submission, but I've had some odd version problems with Thrift
-        # and Storm/Java so I want to be safe.
-        for f in simplejson==2.6.1 thrift==%(thrift_version)s PyYAML==3.10
-        do
-            echo "Installing $f" >>$VENV_LOG 2>&1
-            pip install %(pip_options)s $f >>$VENV_LOG 2>&1
-        done
-
-        easy_install petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
-        if [ -f ./setup.sh ]; then
-            /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
-        fi
+    if [ $CREATE_VENV -ne 0 ]; then
+        # On Mac OS X, the "flock" command is not available
+        create_new=1
         if [ "$has_flock" -eq "0" ]
         then 
+            if [ -d $VENV ];then
+                echo "Using existing venv: $VENV" >>$LOG 2>&1
+                shlock
+                source $VENV/bin/activate >>$LOG 2>&1
+                unlock
+                create_new=0
+            elif ! exlock_now;then
+                echo "Using existing venv: $VENV" >>$LOG 2>&1
+                shlock
+                source $VENV/bin/activate >>$LOG 2>&1
+                unlock
+                create_new=0
+            fi
+        fi
+        if [ "$create_new" -eq "1" ]
+        then
+            echo "Creating new venv: $VENV" >>$LOG 2>&1
+            virtualenv --system-site-packages --python python$PYVER $VENV >>$VENV_LOG 2>&1
+            source $VENV/bin/activate >>$VENV_LOG 2>&1
+
+            # Ensure the version of Thrift on the worker matches our version.
+            # This may not matter since Petrel only uses Thrift for topology build
+            # and submission, but I've had some odd version problems with Thrift
+            # and Storm/Java so I want to be safe.
+            for f in simplejson==2.6.1 thrift==%(thrift_version)s PyYAML==3.10
+            do
+                echo "Installing $f" >>$VENV_LOG 2>&1
+                pip install %(pip_options)s $f >>$VENV_LOG 2>&1
+            done
+
+            easy_install petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
+            if [ -f ./setup.sh ]; then
+                /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
+            fi
+            if [ "$has_flock" -eq "0" ]
+            then 
+                unlock
+            fi
+        fi
+    else
+        # This is a prototype feature where the topology specifies a virtualenv
+        # that already exists. Could be useful in some cases, since this means the
+        # topology is up and running more quickly.
+        if ! exlock_now;then
+            echo "Using existing venv: $VENV" >>$LOG 2>&1
+            shlock
+            source $VENV/bin/activate >>$LOG 2>&1
+            unlock
+        else
+            echo "Updating pre-existing venv: $VENV" >>$LOG 2>&1
+            source $VENV/bin/activate >>$LOG 2>&1
+            easy_install -U petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
+            if [ -f ./setup.sh ]; then
+                /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
+            fi
             unlock
         fi
-    fi
-else
-    # This is a prototype feature where the topology specifies a virtualenv
-    # that already exists. Could be useful in some cases, since this means the
-    # topology is up and running more quickly.
-    if ! exlock_now;then
-        echo "Using existing venv: $VENV" >>$LOG 2>&1
-        shlock
-        source $VENV/bin/activate >>$LOG 2>&1
-        unlock
-    else
-        echo "Updating pre-existing venv: $VENV" >>$LOG 2>&1
-        source $VENV/bin/activate >>$LOG 2>&1
-        easy_install -U petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
-        if [ -f ./setup.sh ]; then
-            /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
-        fi
-        unlock
     fi
 fi
 

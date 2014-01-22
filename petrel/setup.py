@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import urllib2
+import re
 
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + '\n\n'
@@ -15,7 +16,10 @@ PACKAGE = "petrel"
 PETREL_VERSION = '0.1'
 
 def get_storm_version():
-    return subprocess.check_output(['storm', 'version']).strip()    
+    version = subprocess.check_output(['storm', 'version']).strip()
+    m = re.search('^\d\.\d\.\d', version)
+    return m.group(0)
+
 
 def get_version(argv):
     """ Dynamically calculate the version based on VERSION."""
@@ -28,7 +32,8 @@ def build_petrel():
     if os.path.isdir('petrel/generated'):
         shutil.rmtree('petrel/generated')
     os.mkdir('petrel/generated')
-    f_url = urllib2.urlopen('https://raw.github.com/nathanmarz/storm/%s/src/storm.thrift' % version)
+    f_url = urllib2.urlopen('https://raw.github.com/apache/incubator-storm/%s/src/storm.thrift' % version)
+
     with open('storm.thrift', 'w') as f:
         f.write(f_url.read())
     f_url.close()
