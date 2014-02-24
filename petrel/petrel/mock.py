@@ -105,7 +105,7 @@ class Mock(object):
         return self.output_type[emitter_id]
 
     @classmethod
-    def run_simple_topology(cls, config, emitters, result_type=NAMEDTUPLE):
+    def run_simple_topology(cls, config, emitters, result_type=NAMEDTUPLE, max_spout_emits=None):
         """Tests a simple topology. "Simple" means there it has no branches
         or cycles. "emitters" is a list of emitters, starting with a spout
         followed by 0 or more bolts that run in a chain."""
@@ -123,11 +123,13 @@ class Mock(object):
             spout = emitters[0]
             spout_id = self.emitter_id(spout)
             old_length = -1
-            while len(self.pending[spout_id]) > old_length:
-                old_length = len(self.pending[spout_id])
+            length = len(self.pending[spout_id])
+            while length > old_length and (max_spout_emits is None or length < max_spout_emits):
+                old_length = length 
                 self.activate(spout)
                 spout.nextTuple()
-            
+                length = len(self.pending[spout_id])
+
             # For each bolt in the sequence, consume all upstream input.
             for i, bolt in enumerate(emitters[1:]):
                 previous = emitters[i]
