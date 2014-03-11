@@ -273,7 +273,7 @@ if [[ "$unamestr" != 'Darwin' ]]; then
 
             easy_install petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
             if [ -f ./setup.sh ]; then
-                /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
+                /bin/bash ./setup.sh $CREATE_VENV $VENV >>$VENV_LOG 2>&1
             fi
             if [ "$has_flock" -eq "0" ]
             then 
@@ -294,7 +294,7 @@ if [[ "$unamestr" != 'Darwin' ]]; then
             source $VENV/bin/activate >>$LOG 2>&1
             easy_install -U petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
             if [ -f ./setup.sh ]; then
-                /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
+                /bin/bash ./setup.sh $CREATE_VENV $VENV >>$VENV_LOG 2>&1
             fi
             unlock
         fi
