@@ -20,7 +20,7 @@ def add_to_jar(jar, name, data):
     print 'Adding %s' % path
     jar.writestr(path, data)
 
-def add_file_to_jar(jar, directory, script=None, required=True):
+def add_file_to_jar(jar, directory, script=None, required=True, strip_dir=True):
     if script is not None:
         path = os.path.join(directory, script)
     else:
@@ -35,8 +35,32 @@ def add_file_to_jar(jar, directory, script=None, required=True):
     #    raise ValueError("Wildcard '%s' matches multiple files: %s" % (path, ', '.join(path_list)))
     for this_path in path_list:
         with open(this_path, 'r') as f:
-            # Assumption: Drop the path when adding to the jar.
-            add_to_jar(jar, os.path.basename(this_path), f.read())
+            if strip_dir:
+                # Drop the path when adding to the jar.
+                name = os.path.basename(this_path)
+            else:
+                name = os.path.relpath(this_path)
+            add_to_jar(jar, name, f.read())
+
+def add_dir_to_jar(jar, directory, required=True):
+    dir_path_list = glob.glob(directory)
+
+    if len(dir_path_list) == 0 and required:
+        raise ValueError('No directory found matching: %s' % path)
+    for dir_path in dir_path_list:
+        for dirpath, dirnames, filenames in os.walk(dir_path):
+            for filename in filenames:
+                add_file_to_jar(jar, dirpath, filename, strip_dir=False)
+
+def add_item_to_jar(jar, item):
+    path_list = glob.glob(item)
+    for this_path in path_list:
+        if os.path.isdir(this_path):
+            add_dir_to_jar(jar, this_path)
+        elif os.path.isfile(this_path):
+            add_file_to_jar(jar, this_path)
+        else:
+            raise ValueError("No file or directory found matching: %s" % this_path)
 
 def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None, logdir=None):
     """Build a StormTopology .jar which encapsulates the topology defined in
@@ -76,7 +100,7 @@ def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None
                 fn = fn.strip()
                 if len(fn) and not fn.startswith('#'):
 
-                    add_file_to_jar(jar, os.path.expandvars(fn.strip()))
+                    add_item_to_jar(jar, os.path.expandvars(fn.strip()))
 
         # Add user and machine information to the jar.
         add_to_jar(jar, '__submitter__.yaml', '''
