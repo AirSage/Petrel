@@ -65,8 +65,9 @@
 			<id>storm0.9.1</id>
 			<dependencies>
 				<dependency>
-					<groupId>storm</groupId>
-					<artifactId>storm-lib</artifactId>
+                    <!-- Use settings documented here: https://storm.incubator.apache.org/downloads.html -->
+					<groupId>org.apache.storm</groupId>
+					<artifactId>storm-core</artifactId>
 					<version>0.9.1-incubating</version>
 					<!-- keep storm out of the jar-with-dependencies -->
 					<scope>provided</scope>
