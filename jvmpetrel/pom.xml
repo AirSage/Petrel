@@ -4,7 +4,7 @@
 
 	<groupId>storm.petrel</groupId>
 	<artifactId>storm-petrel</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>0.9.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>storm-petrel</name>
@@ -69,8 +69,14 @@
 					<artifactId>storm-lib</artifactId>
 					<version>0.9.1-incubating</version>
 					<!-- keep storm out of the jar-with-dependencies -->
-					<scope>provided</scope>
+					<scope>system</scope>
+					<systemPath>${project.basedir}/../../storm/apache-storm-0.9.1-incubating/lib/storm-core-0.9.1-incubating.jar</systemPath>
 				</dependency>
+				<dependency>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+					<version>1.10</version>
+				</dependency>				
 			</dependencies>
 		</profile>
 		<profile>
