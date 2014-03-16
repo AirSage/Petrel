@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 
 	<name>storm-petrel</name>
-	<url>boss/wiki/epde/Elastic_PDE</url>
+	<url></url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -51,6 +51,28 @@
 	</dependencies>
 
 	<profiles>
+		<profile>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+	                        <property>
+					<name>storm_version</name>
+					<value>0.9.1-incubating</value>
+				</property>
+			</activation>
+			<build>
+				<finalName>storm-petrel-0.9.1-SNAPSHOT</finalName>
+			</build>
+			<id>storm0.9.1</id>
+			<dependencies>
+				<dependency>
+					<groupId>storm</groupId>
+					<artifactId>storm-lib</artifactId>
+					<version>0.9.1-incubating</version>
+					<!-- keep storm out of the jar-with-dependencies -->
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
 		<profile>
 			<activation>
 				<activeByDefault>false</activeByDefault>
