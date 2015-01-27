@@ -35,9 +35,14 @@ def build_petrel():
     version_tuple = tuple([int(s) for s in version_number.split('.')[:3]])
     if version_tuple <= (0, 9, 0):
         path = '%s/src/storm.thrift' % version_string
-    else:
+        f_url = urllib2.urlopen('https://raw.github.com/apache/incubator-storm/%s' % path)
+    elif version_tuple <= (0, 9, 1):
         path = 'apache-%s/storm-core/src/storm.thrift' % version_number
-    f_url = urllib2.urlopen('https://raw.github.com/apache/incubator-storm/%s' % path)
+        f_url = urllib2.urlopen('https://raw.github.com/apache/incubator-storm/%s' % path)
+    elif version_tuple == (0, 9, 2):
+        f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v0.9.2-incubating/storm-core/src/storm.thrift')
+    else:
+        f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v%s/storm-core/src/storm.thrift' % version_string)
 
     with open('storm.thrift', 'w') as f:
         f.write(f_url.read())
