@@ -18,6 +18,8 @@ class WordCountBolt(BasicBolt):
         return ['word', 'count']
 
     def process(self, tup):
+        if tup.stream == '__heartbeat':
+            return
         log.debug('WordCountBolt.process() called with: %s', tup)
         word = tup.values[0]
         self._count[word] += 1
