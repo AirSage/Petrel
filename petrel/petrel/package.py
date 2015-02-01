@@ -284,20 +284,8 @@ if [[ "$unamestr" != 'Darwin' ]]; then
         # This is a prototype feature where the topology specifies a virtualenv
         # that already exists. Could be useful in some cases, since this means the
         # topology is up and running more quickly.
-        if ! exlock_now;then
-            echo "Using existing venv: $VENV" >>$LOG 2>&1
-            shlock
-            source $VENV/bin/activate >>$LOG 2>&1
-            unlock
-        else
-            echo "Updating pre-existing venv: $VENV" >>$LOG 2>&1
-            source $VENV/bin/activate >>$LOG 2>&1
-            easy_install -U petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
-            if [ -f ./setup.sh ]; then
-                /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
-            fi
-            unlock
-        fi
+        echo "Using existing venv: $VENV" >>$LOG 2>&1
+        source $VENV/bin/activate >>$LOG 2>&1
     fi
 fi
 

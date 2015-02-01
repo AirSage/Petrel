@@ -30,6 +30,8 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
     # Build a topology jar and submit it to Storm.
     if not sourcejar:
         sourcejar = get_sourcejar()
+    if venv == 'self':
+        venv = os.path.dirname(os.path.dirname(sys.executable))
     build_jar(
         source_jar_path=sourcejar,
         dest_jar_path=destjar,
@@ -78,7 +80,7 @@ def main():
     parser_submit.add_argument('--definition', dest='definition',
                         help='python module and function defining the topology (must be in current directory)')
     parser_submit.add_argument('--venv', dest='venv',
-                        help='An existing virtual environment to reuse on the server')
+                        help='An existing virtual environment to reuse on the server ("self" uses the current virtual environment)')
     parser_submit.add_argument('--logdir', dest='logdir',
                         help='Root directory for logfiles (default: the storm supervisor directory)')
     parser_submit.add_argument('--extrastormcp', dest='extrastormcp',
