@@ -15,7 +15,7 @@ class SplitSentenceBolt(BasicBolt):
         return ['word']
 
     def process(self, tup):
-        if tup.stream == '__heartbeat':
+        if storm.handleHeartbeat(tup):
             return
         log.debug('SplitSentenceBolt.process() called with: %s', tup)
         words = tup.values[0].split(" ")

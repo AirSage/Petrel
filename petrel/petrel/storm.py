@@ -86,6 +86,17 @@ def readTaskIds():
             msg = readMsg()
         return msg
 
+def isHeartbeat(tup):
+    """Tell whether the tuple is a heartbeat tuple."""
+    return tup.task == -1 and tup.stream == '__heartbeat'
+
+def handleHeartbeat(tup):
+    if isHeartbeat(tup):
+        sync()
+        return True
+    else:
+        return False
+
 #queue up taskids we read while trying to read commands/tuples
 pending_taskids = deque()
 
