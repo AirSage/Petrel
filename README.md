@@ -15,6 +15,36 @@ Petrel offers some important improvements over the storm.py module provided with
 * "petrel.mock" allows testing of single components or single chains of related components.
 * Petrel automatically sets up logging for every spout or bolt and logs a stack trace on unhandled errors.
 
+Here's a quick example. It implements word count, the classic big data demo application.
+
+This code defines the topology. Without Petrel, you'd have to write this code in Clojure or Java. Petrel re-implements the Java "TopologyBuilder" API in Python. If you've seen that class, this code will look very familiar:
+
+<pre>
+import randomsentence
+import splitsentence
+import wordcount
+
+def create(builder):
+    builder.setSpout("spout", randomsentence.RandomSentenceSpout(), 1)
+    builder.setBolt("split", splitsentence.SplitSentenceBolt(), 1).shuffleGrouping("spout")
+    builder.setBolt("count", wordcount.WordCountBolt(), 1).fieldsGrouping("split", ["word"])
+</pre>
+
+This word count example is included in the Petrel repository. Here's how to run it. From the top-level directory of the Petrel repository, run:
+
+    cd samples/wordcount
+    ./buildandrun --config topology.yaml
+
+This will build a topology JAR file and submit it to Storm, running the topology in local mode. No Ant, Maven, leinengen, or Clojure required.
+
+    ./buildandrun --config topology.yaml
+
+Simply add the topology name to the command line to run on a real cluster instead:
+
+    ./buildandrun --config topology.yaml wordcount
+ 
+NOTE: I'm working to improve the Petrel documentation and tooling to make it easier for beginners to become productive with Petrel quickly. If you have requests or suggestions, please log an issue in GitHub.
+
 Installation
 ============
 
@@ -68,32 +98,6 @@ Clone Petrel from github. Then run:
 This will download a few dependencies and then print a message like:
 
     Finished processing dependencies for petrel==0.7.4.0.1
-
-Running the word count example
-==============================
-
-From the base Petrel directory, run:
-
-    cd samples/wordcount
-    ./buildandrun --config topology.yaml
-
-This will run the topology in local mode. You can run it on a real cluster by providing an additional parameter, the name of the topology:
-
-    ./buildandrun --config topology.yaml wordcount
-
-Topology definition
-===================
-
-<pre>
-import randomsentence
-import splitsentence
-import wordcount
-
-def create(builder):
-    builder.setSpout("spout", randomsentence.RandomSentenceSpout(), 1)
-    builder.setBolt("split", splitsentence.SplitSentenceBolt(), 1).shuffleGrouping("spout")
-    builder.setBolt("count", wordcount.WordCountBolt(), 1).fieldsGrouping("split", ["word"])
-</pre>
 
 Topology Configuration
 ======================
