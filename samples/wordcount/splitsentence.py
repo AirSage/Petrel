@@ -15,8 +15,6 @@ class SplitSentenceBolt(BasicBolt):
         return ['word']
 
     def process(self, tup):
-        if storm.handleHeartbeat(tup):
-            return
         log.debug('SplitSentenceBolt.process() called with: %s', tup)
         words = tup.values[0].split(" ")
         for word in words:

@@ -38,37 +38,15 @@ class StormIPCException(Exception):
 
 #reads lines and reconstructs newlines appropriately
 def readMsg():
-    def read_message_lines():
-        if BLANK_LINE_CHECK:
-            count_blank = 0
-        i_line = 0
-        message_size = 0
-        while True:
-            line = sys.stdin.readline()[0:-1]
-            i_line += 1
-            message_size += len(line)
-            if line == "end":
-                break
-            # If message size exceeds MAX_MESSAGE_SIZE, we assume that the Storm
-            # worker has died, and we would be reading an infinite series of blank
-            # lines. Throw an error to halt processing, otherwise the task will
-            # use 100% CPU and will quickly consume a huge amount of RAM.
-            if MAX_MESSAGE_SIZE is not None and message_size > MAX_MESSAGE_SIZE:
-                raise StormIPCException('Message exceeds MAX_MESSAGE_SIZE -- assuming this is an error')
-
-            if BLANK_LINE_CHECK:
-                if not line:
-                    storm_log.debug('Message line #%d is blank. Pipe to Storm supervisor may be broken.', i_line)
-                    count_blank += 1
-                    if count_blank >= 20:
-                        raise StormIPCException('Pipe to Storm supervisor seems to be broken!')
-                if i_line > 100:
-                    raise StormIPCException('Message exceeds 100 lines -- assuming this is an error')
-                if count_blank > 0:
-                    storm_log.debug('Message line #%d: %s', i_line + 1, line)
-            yield line
-    msg = ''.join('%s\n' % line for line in read_message_lines())
-    return json_decode(msg)
+    msg = ""
+    while True:
+        line = sys.stdin.readline()
+        if not line:
+            raise StormIPCException('Read EOF from stdin')
+        if line[0:-1] == "end":
+            break
+        msg = msg + line
+    return json_decode(msg[0:-1])
 
 MODE = None
 ANCHOR_TUPLE = None
@@ -85,17 +63,6 @@ def readTaskIds():
             pending_commands.append(msg)
             msg = readMsg()
         return msg
-
-def isHeartbeat(tup):
-    """Tell whether the tuple is a heartbeat tuple."""
-    return tup.task == -1 and tup.stream == '__heartbeat'
-
-def handleHeartbeat(tup):
-    if isHeartbeat(tup):
-        sync()
-        return True
-    else:
-        return False
 
 #queue up taskids we read while trying to read commands/tuples
 pending_taskids = deque()
@@ -310,6 +277,9 @@ class Tuple(object):
                 self.__class__.__name__,
                 ''.join(' %s=%r' % (k, getattr(self, k)) for k in sorted(self.__slots__)))
 
+    def is_heartbeat_tuple(self):
+        return self.task == -1 and self.stream == "__heartbeat"
+
 class Task(object):
     def shared_initialize(self):
         conf, context = initComponent()
@@ -362,9 +332,12 @@ class Bolt(Task):
             while True:
                 if profiler is not None: profiler.pre_read()
                 tup = readTuple()
-                if profiler is not None: profiler.post_read()
-                self.process(tup)
-                if profiler is not None: profiler.post_process()
+                if tup.is_heartbeat_tuple():
+                    sync()
+                else:
+                    if profiler is not None: profiler.post_read()
+                    self.process(tup)
+                    if profiler is not None: profiler.post_process()
         except Exception, e:
             self.report_exception('E_BOLTFAILED', e)
             storm_log.exception('Caught exception in Bolt.run')
@@ -399,12 +372,15 @@ class BasicBolt(Task):
             while True:
                 if profiler is not None: profiler.pre_read()
                 tup = readTuple()
-                if profiler is not None: profiler.post_read()
-                ANCHOR_TUPLE = tup
-                self.process(tup)
-                if profiler is not None: profiler.post_process()
-                ack(tup)
-                if profiler is not None: profiler.post_ack()
+                if tup.is_heartbeat_tuple():
+                    sync()
+                else:
+                    if profiler is not None: profiler.post_read()
+                    ANCHOR_TUPLE = tup
+                    self.process(tup)
+                    if profiler is not None: profiler.post_process()
+                    ack(tup)
+                    if profiler is not None: profiler.post_ack()
         except Exception, e:
             self.report_exception('E_BOLTFAILED', e)
             storm_log.exception('Caught exception in BasicBolt.run')

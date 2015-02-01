@@ -18,8 +18,6 @@ class WordCountBolt(BasicBolt):
         return ['word', 'count']
 
     def process(self, tup):
-        if storm.handleHeartbeat(tup):
-            return
         log.debug('WordCountBolt.process() called with: %s', tup)
         word = tup.values[0]
         self._count[word] += 1
