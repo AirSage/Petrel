@@ -271,7 +271,35 @@ if [[ "$unamestr" != 'Darwin' ]]; then
                 pip install %(pip_options)s $f >>$VENV_LOG 2>&1
             done
 
-            easy_install petrel-*-py$PYVER.egg >>$VENV_LOG 2>&1
+            # Install Petrel. Two possibilities:
+            # 1. If a Petrel egg was provided with the topology, install it.
+            # This is useful primarily for those who want direct control over
+            # the specific version of Petrel being installed. This is typically
+            # useful only if you're modifying and building Petrel from source.
+            # 2. Otherwise, install using easy_install, typically from a mirror.
+            # Because it does not require a local copy of the Petrel egg, this
+            # is simpler for most Petrel users, especially new ones.
+            # :TRICKY: Use bash glob expansion to see if a local file exists. See http://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-wildcard-in-shell-script
+            for f in petrel-*-py$PYVER.egg
+            do
+                # Check if the glob gets expanded to existing files.
+                # If not, f here will be exactly the pattern above
+                # and the exists test will evaluate to false.
+                if [ -e "$f" ]
+                then
+                    # Case 1
+                    echo "Installing Petrel from local file $f" >>$VENV_LOG 2>&1
+                    easy_install $f >>$VENV_LOG 2>&1
+                else
+                    # Case 2
+                    echo "Installing petrel==%(petrel_version)s" >>$VENV_LOG 2>&1
+                    easy_install petrel==%(petrel_version)s >>$VENV_LOG 2>&1
+                fi
+            
+                # We can break after the first iteration.
+                break
+            done
+
             if [ -f ./setup.sh ]; then
                 /bin/bash ./setup.sh $CREATE_VENV >>$VENV_LOG 2>&1
             fi
@@ -303,6 +331,7 @@ exec python -m petrel.run $SCRIPT $LOG
     logdir='$PWD' if logdir is None else logdir,
     create_virtualenv=create_virtualenv,
     thrift_version=pkg_resources.get_distribution("thrift").version,
+    petrel_version=pkg_resources.get_distribution("petrel").version,
     pip_options=pip_options,
     ))
 
