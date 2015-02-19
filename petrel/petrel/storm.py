@@ -280,6 +280,9 @@ class Tuple(object):
     def is_heartbeat_tuple(self):
         return self.task == -1 and self.stream == "__heartbeat"
 
+    def is_tick_tuple(self):
+        return self.task == -1 and self.stream == "__tick"
+
 class Task(object):
     def shared_initialize(self):
         conf, context = initComponent()
@@ -382,6 +385,7 @@ class BasicBolt(Task):
                     ack(tup)
                     if profiler is not None: profiler.post_ack()
         except Exception, e:
+            storm_log.info('Caught exception')
             self.report_exception('E_BOLTFAILED', e)
             storm_log.exception('Caught exception in BasicBolt.run')
             if 'tup' in locals():
