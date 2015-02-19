@@ -13,7 +13,7 @@ long_description = open(README).read() + '\n\n'
 
 PACKAGE = "petrel"
 
-PETREL_VERSION = '0.2'
+PETREL_VERSION = '0.3'
 
 def get_storm_version():
     version = subprocess.check_output(['storm', 'version']).strip()
