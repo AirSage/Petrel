@@ -16,11 +16,11 @@
 	<repositories>
 		<repository>
 			<id>clojars.org</id>
-			<url>http://clojars.org/repo</url>
+			<url>https://clojars.org/repo</url>
 		</repository>
 		<repository>
 			<id>github-releases</id>
-			<url>http://oss.sonatype.org/content/repositories/github-releases/</url>
+			<url>https://oss.sonatype.org/content/repositories/github-releases/</url>
 		</repository>
 	</repositories>
 
