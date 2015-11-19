@@ -15,8 +15,8 @@ from .status import status
 
 def get_storm_version():
     version = subprocess.check_output(['storm', 'version']).strip()
-    m = re.search('^\d\.\d\.\d', version)
-    return m.group(0)
+    m = re.search('^(Storm )?(\d+\.\d+\.\d+)', version)
+    return m.group(2)
 
 
 def get_sourcejar():
