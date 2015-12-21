@@ -62,6 +62,8 @@ def build_petrel():
     subprocess.check_call(['mvn', '-Dstorm_version=%s' % version_string, 'assembly:assembly'])
     os.chdir(old_cwd)
     shutil.copyfile(
+        #'../jvmpetrel/target/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % version_number,
+        #'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % version_number)
         '../jvmpetrel/target/storm-petrel-%s-SNAPSHOT.jar' % version_number,
         'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % version_number)
 
@@ -93,7 +95,7 @@ setup(name=PACKAGE
     ,install_requires=[
         'simplejson==2.6.1',
         # Request specific Thrift version. Storm is in Java and may be sensitive to version incompatibilities.
-        'thrift==0.8.0',
+        'thrift==0.9.3',
         'PyYAML==3.10',
     ]
     # Setting this flag makes Petrel easier to debug within a running topology.

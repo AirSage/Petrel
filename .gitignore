@@ -15,6 +15,7 @@ develop-eggs
 .installed.cfg
 generated
 pom.properties
+samples/wordcount/topology.jar
 
 # Installer logs
 pip-log.txt
