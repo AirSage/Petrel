@@ -3,6 +3,8 @@
 # Packages
 *.egg
 *.egg-info
+*.swp
+*.class
 dist
 build
 eggs
@@ -11,6 +13,8 @@ var
 sdist
 develop-eggs
 .installed.cfg
+generated
+pom.properties
 
 # Installer logs
 pip-log.txt
