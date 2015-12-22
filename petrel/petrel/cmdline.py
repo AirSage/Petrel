@@ -42,8 +42,9 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
     storm_class_path = [ subprocess.check_output(["storm","classpath"]).strip(), destjar ]
     if extrastormcp is not None:
         storm_class_path = [ extrastormcp ] + storm_class_path
-    storm_home = os.path.dirname(os.path.dirname(
-        subprocess.check_output(['which', 'storm'])))
+    storm_home = os.environ['STORM_HOME']
+    #storm_home = os.path.dirname(os.path.dirname(
+        #subprocess.check_output(['which', 'storm'])))
     submit_args = [
         "",
         "-client",
@@ -53,11 +54,16 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
         "-Dstorm.jar=%s" % destjar,
         "storm.petrel.GenericTopology",
     ]
+
+    print "---"
+    print ', '.join(submit_args)
+    print "---"
     if name:
         submit_args += [name]
     os.execvp('java', submit_args)
 
 def kill(name, config):
+    print "--- ", name
     config = read_yaml(config)
     
     # Read the nimbus.host setting from topology YAML so we can submit the

@@ -4,7 +4,7 @@
 
 	<groupId>storm.petrel</groupId>
 	<artifactId>storm-petrel</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>0.10.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>storm-petrel</name>
@@ -38,19 +38,42 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- <dependency>
+		<dependency>
 		    <groupId>org.apache.thrift</groupId>
 		    <artifactId>libthrift</artifactId>
-		    <version>0.8.0</version>
+		    <version>0.9.3</version>
 		</dependency>
-		<dependency>
-		    <groupId>org.apache.thrift7</groupId>
-		    <artifactId>libthrift</artifactId>
-		    <version>0.8.0</version>
-		</dependency> -->
+                <dependency>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                    <version>1.12</version>
+                </dependency>
 	</dependencies>
 
 	<profiles>
+		<profile>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+	                        <property>
+					<name>storm_version</name>
+					<value>0.10.0</value>
+				</property>
+			</activation>
+			<build>
+				<finalName>storm-petrel-0.10.0-SNAPSHOT</finalName>
+			</build>
+			<id>storm0.10.0</id>
+			<dependencies>
+				<dependency>
+                    <!-- Use settings documented here: https://storm.incubator.apache.org/downloads.html -->
+					<groupId>org.apache.storm</groupId>
+					<artifactId>storm-core</artifactId>
+					<version>0.10.0</version>
+					<!-- keep storm out of the jar-with-dependencies -->
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
 		<profile>
 			<activation>
 				<activeByDefault>false</activeByDefault>
@@ -274,8 +297,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 		</plugins>

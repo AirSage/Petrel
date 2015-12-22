@@ -13,12 +13,12 @@ long_description = open(README).read() + '\n\n'
 
 PACKAGE = "petrel"
 
-PETREL_VERSION = '0.3'
+PETREL_VERSION = '0.10.0'
 
 def get_storm_version():
     version = subprocess.check_output(['storm', 'version']).strip()
-    m = re.search(r'^(\d\.\d\.\d)(-(\w+))?', version)
-    return m.group(0), m.group(1)
+    m = re.search('^(Storm )?(\d+\.\d+\.\d+)', version)
+    return m.group(0), m.group(2)
 
 
 def get_version(argv):
@@ -27,7 +27,7 @@ def get_version(argv):
 
 def build_petrel():
     version_string, version_number = get_storm_version()
-    
+
     # Generate Thrift Python wrappers.
     if os.path.isdir('petrel/generated'):
         shutil.rmtree('petrel/generated')
@@ -41,7 +41,10 @@ def build_petrel():
         f_url = urllib2.urlopen('https://raw.github.com/apache/incubator-storm/%s' % path)
     elif version_tuple == (0, 9, 2):
         f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v0.9.2-incubating/storm-core/src/storm.thrift')
+    elif version_tuple == (0, 10, 0):
+        f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v0.10.0/storm-core/src/storm.thrift')
     else:
+        print version_string
         f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v%s/storm-core/src/storm.thrift' % version_string)
 
     with open('storm.thrift', 'w') as f:
@@ -59,8 +62,10 @@ def build_petrel():
     subprocess.check_call(['mvn', '-Dstorm_version=%s' % version_string, 'assembly:assembly'])
     os.chdir(old_cwd)
     shutil.copyfile(
-        '../jvmpetrel/target/storm-petrel-%s-SNAPSHOT.jar' % version_number,
+        '../jvmpetrel/target/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % version_number,
         'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % version_number)
+        #'../jvmpetrel/target/storm-petrel-%s-SNAPSHOT.jar' % version_number,
+        #'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % version_number)
 
 if 'bdist_egg' in sys.argv or 'develop' in sys.argv:
     build_petrel()
@@ -90,7 +95,7 @@ setup(name=PACKAGE
     ,install_requires=[
         'simplejson==2.6.1',
         # Request specific Thrift version. Storm is in Java and may be sensitive to version incompatibilities.
-        'thrift==0.8.0',
+        'thrift==0.9.3',
         'PyYAML==3.10',
     ]
     # Setting this flag makes Petrel easier to debug within a running topology.
