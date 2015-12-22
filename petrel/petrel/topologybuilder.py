@@ -7,14 +7,6 @@ from petrel.generated.storm.ttypes import ComponentCommon, Grouping, NullStruct,
 from petrel.generated.storm.ttypes import StreamInfo, Bolt, SpoutSpec, ShellComponent
 from petrel.generated.storm.ttypes import ComponentObject, StormTopology
 
-# Storm uses GlobalStreamId as a dict key, but the Thrift Python binding doesn't
-# support this. As a simple workaround, add a hash function that always returns
-# 0. The resulting map won't be efficient at storing large amounts of data, but
-# it should work in all cases.
-# https://issues.apache.org/jira/browse/THRIFT-162.
-assert not hasattr(GlobalStreamId, '__hash__')
-GlobalStreamId.__hash__ = lambda self: 0
-
 ##########################################################################
 
 class TopologyBuilder(object):
