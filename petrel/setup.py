@@ -16,14 +16,15 @@ PACKAGE = "petrel"
 PETREL_VERSION = '0.3'
 
 def get_storm_version():
-    version = subprocess.check_output(['storm', 'version']).strip()
-    m = re.search(r'^(\d\.\d\.\d)(-(\w+))?', version)
-    return m.group(0), m.group(1)
+    version = subprocess.check_output(['storm', 'version']).split('\n')[0].strip()
+    m = re.search(r'^(Storm )?(\d+\.\d+\.\d+)(-(\w+))?', version)
+    return m.group(0), m.group(2)
 
 
 def get_version(argv):
     """ Dynamically calculate the version based on VERSION."""
     return '%s.%s' % (get_storm_version()[1], PETREL_VERSION)
+
 
 def build_petrel():
     version_string, version_number = get_storm_version()
@@ -42,7 +43,7 @@ def build_petrel():
     elif version_tuple == (0, 9, 2):
         f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v0.9.2-incubating/storm-core/src/storm.thrift')
     else:
-        f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v%s/storm-core/src/storm.thrift' % version_string)
+        f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v%s/storm-core/src/storm.thrift' % version_number)
 
     with open('storm.thrift', 'w') as f:
         f.write(f_url.read())
@@ -56,7 +57,7 @@ def build_petrel():
     
     # Build JVMPetrel.
     os.chdir('../jvmpetrel')
-    subprocess.check_call(['mvn', '-Dstorm_version=%s' % version_string, 'assembly:assembly'])
+    subprocess.check_call(['mvn', '-Dstorm_version=%s' % version_number, 'assembly:assembly'])
     os.chdir(old_cwd)
     shutil.copyfile(
         '../jvmpetrel/target/storm-petrel-%s-SNAPSHOT.jar' % version_number,

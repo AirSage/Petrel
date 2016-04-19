@@ -56,6 +56,29 @@
 				<activeByDefault>false</activeByDefault>
 	                        <property>
 					<name>storm_version</name>
+					<value>0.10.0</value>
+				</property>
+			</activation>
+			<build>
+				<finalName>storm-petrel-0.10.0-SNAPSHOT</finalName>
+			</build>
+			<id>storm0.10.0</id>
+			<dependencies>
+				<dependency>
+                    <!-- Use settings documented here: https://storm.incubator.apache.org/downloads.html -->
+					<groupId>org.apache.storm</groupId>
+					<artifactId>storm-core</artifactId>
+					<version>0.10.0</version>
+					<!-- keep storm out of the jar-with-dependencies -->
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+	                        <property>
+					<name>storm_version</name>
 					<value>0.9.4</value>
 				</property>
 			</activation>
