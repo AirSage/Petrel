@@ -23,7 +23,7 @@ def get_sourcejar():
     storm_version = get_storm_version()
     sourcejar = pkg_resources.resource_filename(
         pkg_resources.Requirement.parse('petrel'),
-        'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % storm_version)
+        'petrel/generated/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % storm_version)
     return sourcejar
 
 def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastormcp):

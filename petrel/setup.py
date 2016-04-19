@@ -60,8 +60,8 @@ def build_petrel():
     subprocess.check_call(['mvn', '-Dstorm_version=%s' % version_number, 'assembly:assembly'])
     os.chdir(old_cwd)
     shutil.copyfile(
-        '../jvmpetrel/target/storm-petrel-%s-SNAPSHOT.jar' % version_number,
-        'petrel/generated/storm-petrel-%s-SNAPSHOT.jar' % version_number)
+        '../jvmpetrel/target/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % version_number,
+        'petrel/generated/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % version_number)
 
 if 'bdist_egg' in sys.argv or 'develop' in sys.argv:
     build_petrel()
