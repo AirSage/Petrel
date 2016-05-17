@@ -6,14 +6,14 @@ import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.util.Map;
 
-import org.apache.thrift7.TBase;
+import org.apache.storm.thrift.TBase;
 
 import org.yaml.snakeyaml.Yaml;
 
-import backtype.storm.Config;
-import backtype.storm.LocalCluster;
-import backtype.storm.StormSubmitter;
-import backtype.storm.generated.StormTopology;
+import org.apache.storm.Config;
+import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
+import org.apache.storm.generated.StormTopology;
 
 public class GenericTopology
 {

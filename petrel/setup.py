@@ -16,8 +16,11 @@ PACKAGE = "petrel"
 PETREL_VERSION = '0.3'
 
 def get_storm_version():
-    version = subprocess.check_output(['storm', 'version']).split('\n')[0].strip()
-    m = re.search(r'^(Storm )?(\d+\.\d+\.\d+)(-(\w+))?', version)
+    version_output = [s.strip() for s in subprocess.check_output(['storm', 'version']).split('\n')]
+    for line in version_output:
+        m = re.search(r'^(Storm )?(\d+\.\d+\.\d+)(-(\w+))?$', line)
+        if m is not None:
+            break
     return m.group(0), m.group(2)
 
 
@@ -42,6 +45,8 @@ def build_petrel():
         f_url = urllib2.urlopen('https://raw.github.com/apache/incubator-storm/%s' % path)
     elif version_tuple == (0, 9, 2):
         f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v0.9.2-incubating/storm-core/src/storm.thrift')
+    elif version_tuple[:2] == (1, 0):
+        f_url = urllib2.urlopen('https://raw.githubusercontent.com/HeartSaVioR/storm/ad46a470c173c8daf2bd76bc10ecbfc6fd08865b/storm-core/src/storm.thrift')
     else:
         f_url = urllib2.urlopen('https://raw.githubusercontent.com/apache/storm/v%s/storm-core/src/storm.thrift' % version_number)
 

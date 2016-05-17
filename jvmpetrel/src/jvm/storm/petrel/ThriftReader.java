@@ -9,10 +9,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.apache.thrift7.TBase;
-import org.apache.thrift7.TException;
-import org.apache.thrift7.protocol.TBinaryProtocol;
-import org.apache.thrift7.transport.TIOStreamTransport;
+import org.apache.storm.thrift.TBase;
+import org.apache.storm.thrift.TException;
+import org.apache.storm.thrift.protocol.TBinaryProtocol;
+import org.apache.storm.thrift.transport.TIOStreamTransport;
 
 /**
  * A simple class for reading Thrift objects (of a single type) from a file.

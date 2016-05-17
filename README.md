@@ -102,7 +102,7 @@ This will download a few dependencies and then print a message like:
 Topology Configuration
 ======================
 
-Petrel's "--config" parameter accepts a YAML file with standard Storm configuration options. Petre also provides some Petrel-specific settings. See below.
+Petrel's "--config" parameter accepts a YAML file with standard Storm configuration options. The file can also include some Petrel-specific settings. See below.
 
 ```
 topology.message.timeout.secs: 150

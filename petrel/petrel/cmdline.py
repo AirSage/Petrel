@@ -14,8 +14,11 @@ from .emitter import EmitterBase
 from .status import status
 
 def get_storm_version():
-    version = subprocess.check_output(['storm', 'version']).strip()
-    m = re.search('^(Storm )?(\d+\.\d+\.\d+)', version)
+    version_output = [s.strip() for s in subprocess.check_output(['storm', 'version']).split('\n')]
+    for line in version_output:
+        m = re.search(r'^(Storm )?(\d+\.\d+\.\d+)(-(\w+))?$', line)
+        if m is not None:
+            break
     return m.group(2)
 
 
