@@ -3,20 +3,10 @@ import os
 import time
 import socket
 import logging
-import traceback
+
 from collections import deque
 
-try:
-    # Use simplejson instead of json because it is released more frequently and
-    # is generally faster.
-    import simplejson as json
-
-    # However, if speedups are not installed, simplejson will be slow, so use
-    # the built-in json instead.
-    if json._import_c_make_encoder() is None:
-        import json
-except ImportError:
-    import json
+import json
 
 storm_log = logging.getLogger('storm')
 

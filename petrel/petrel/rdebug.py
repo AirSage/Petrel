@@ -2,11 +2,15 @@
 try: import readline  # For readline input support
 except: pass
 
-import sys, os, traceback, signal, codeop, cStringIO, cPickle, tempfile
+import sys, os, traceback, signal, codeop, cPickle, tempfile
+
+from six import StringIO
+
 
 def pipename(pid):
     """Return name of pipe to use"""
     return os.path.join(tempfile.gettempdir(), 'debug-%d' % pid)
+
 
 class NamedPipe(object):
     def __init__(self, name, end=0, mode=0666):
@@ -61,7 +65,8 @@ class NamedPipe(object):
 
     def __del__(self):
         self.close()
-        
+
+
 def remote_debug(sig,frame):
     """Handler to allow process to be remotely debugged."""
     def _raiseEx(ex):
@@ -91,7 +96,7 @@ def remote_debug(sig,frame):
                 try:
                     code = codeop.compile_command(txt)
                     if code:
-                        sys.stdout = cStringIO.StringIO()
+                        sys.stdout = StringIO()
                         sys.stderr = sys.stdout
                         exec code in globs,locs
                         txt = ''
@@ -100,7 +105,7 @@ def remote_debug(sig,frame):
                         pipe.put('... ')
                 except:
                     txt='' # May be syntax err.
-                    sys.stdout = cStringIO.StringIO()
+                    sys.stdout = StringIO()
                     sys.stderr = sys.stdout
                     traceback.print_exc()
                     pipe.put(sys.stdout.getvalue() + '>>> ')
@@ -113,7 +118,8 @@ def remote_debug(sig,frame):
         traceback.print_exc()
         
     if _raiseEx.ex is not None: raise _raiseEx.ex
-    
+
+
 def debug_process(pid):
     """Interrupt a running process and debug it."""
     os.kill(pid, signal.SIGUSR1)  # Signal process.
@@ -125,6 +131,7 @@ def debug_process(pid):
     except EOFError:
         pass # Exit.
     pipe.close()
+
 
 def listen():
     signal.signal(signal.SIGUSR1, remote_debug) # Register for remote debugging.

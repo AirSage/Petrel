@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import sys
 import shutil
@@ -6,18 +8,20 @@ import socket
 import zipfile
 import glob
 import pkg_resources
-from itertools import chain
-from cStringIO import StringIO
 
-from topologybuilder import TopologyBuilder
-from util import read_yaml
+from itertools import chain
+
+from six import StringIO
+
+from .topologybuilder import TopologyBuilder
+from .util import read_yaml
 
 MANIFEST = 'manifest.txt'
 
 
 def add_to_jar(jar, name, data):
     path = 'resources/%s' % name
-    print 'Adding %s' % path
+    print('Adding {}'.format(path))
     jar.writestr(path, data)
 
 
@@ -210,7 +214,7 @@ if [ $RETVAL -ne 0 ]; then
 fi
 # Now the desired Python *must* be available. This line ensures we detect the
 # error and fail before continuing.
-python$PYVER -c "print" >>$LOG 2>&1
+python$PYVER -c "pass" >>$LOG 2>&1
 
 
 unamestr=`uname`
@@ -270,7 +274,7 @@ if [[ "$unamestr" != 'Darwin' ]]; then
             # This may not matter since Petrel only uses Thrift for topology build
             # and submission, but I've had some odd version problems with Thrift
             # and Storm/Java so I want to be safe.
-            for f in simplejson==2.6.1 thrift==%(thrift_version)s PyYAML==3.10
+            for f in thrift==%(thrift_version)s PyYAML==3.10
             do
                 echo "Installing $f" >>$VENV_LOG 2>&1
                 pip install %(pip_options)s $f >>$VENV_LOG 2>&1

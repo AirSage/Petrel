@@ -1,9 +1,11 @@
-import os
-import sys
+from __future__ import print_function
+
 import argparse
-import traceback
-import subprocess
+import os
 import re
+import subprocess
+import sys
+import traceback
 
 import pkg_resources
 
@@ -115,7 +117,7 @@ def main():
         func = args.__dict__.pop('func')
         func(**args.__dict__)
     except Exception as e:
-        print str(e)
+        print(str(e))
         traceback.print_exc()
         sys.exit(1)
 
