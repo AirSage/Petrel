@@ -6,12 +6,11 @@ import subprocess
 import re
 
 import pkg_resources
-import yaml
 
 from .util import read_yaml
 from .package import build_jar
-from .emitter import EmitterBase
 from .status import status
+
 
 def get_storm_version():
     version_output = [s.strip() for s in subprocess.check_output(['storm', 'version']).split('\n')]
@@ -28,6 +27,7 @@ def get_sourcejar():
         pkg_resources.Requirement.parse('petrel'),
         'petrel/generated/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % storm_version)
     return sourcejar
+
 
 def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastormcp):
     # Build a topology jar and submit it to Storm.
@@ -60,6 +60,7 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
         submit_args += [name]
     os.execvp('java', submit_args)
 
+
 def kill(name, config):
     config = read_yaml(config)
     
@@ -70,6 +71,7 @@ def kill(name, config):
     if nimbus_host:
         kill_args += ['-c', 'nimbus.host=%s' % nimbus_host]
     os.execvp('storm', kill_args)
+
 
 def main():
     parser = argparse.ArgumentParser(prog='petrel', description='Petrel command line')

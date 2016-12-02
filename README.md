@@ -5,6 +5,13 @@ Tools for writing, submitting, debugging, and monitoring Storm topologies in pur
 
 NOTE: Unlike the base Storm package, which only requires Python 2.6, Petrel requires Python 2.7.
 
+If you like Petrel and are interested in more extensive documentation and examples, see the
+[book from Packt](https://www.packtpub.com/big-data-and-business-intelligence/building-python-real-time-applications-storm).
+The book is also available from
+[Amazon](https://www.amazon.com/Building-Python-Real-Time-Applications-Storm/dp/1784392855/ref=sr_1_1?).
+
+I support Petrel in my spare time, and your purchases motivate me to continue maintaining it.
+
 Overview
 ========
 
@@ -48,9 +55,10 @@ NOTE: I'm working to improve the Petrel documentation and tooling to make it eas
 Installation
 ============
 
-* System
-  * Python 2.7
+* Python 2.7
+* System packages
   * libyaml
+  * thrift
 * Python packages (you install)
     * virtualenv
 * Python packages (installed automatically by setup.py)
@@ -65,7 +73,7 @@ Before installing Petrel, make sure Storm is installed and in your path. Run the
 
     storm version
     
-This will print the version of Storm active on your system, a number such as "0.7.4". You must use a version of Petrel whose first 3 digits match this version.
+This will print the version of Storm active on your system, a number such as "1.0.2". You must use a version of Petrel whose first 3 digits match this version.
 
 Install the egg:
 
@@ -73,7 +81,7 @@ easy_install petrel*.egg
 
 This will download a few dependencies and then print a message like:
 
-    Finished processing dependencies for petrel==0.7.4.0.1
+    Finished processing dependencies for petrel==1.0.2.0.3
 
 Installing Petrel from source
 -----------------------------
@@ -84,10 +92,10 @@ Ensure the following tools are installed:
 
 * Storm
     * Test with "storm version"
-    * Should print something like "0.7.4"
+    * Should print something like "1.0.2"
 * Thrift compiler
     * Test with "thrift -version"
-    * Should print "Thrift version 0.7.0"
+    * Should print something like "Thrift version 0.9.3"
 * Maven (test with "mvn -version")
 
 Clone Petrel from github. Then run:
@@ -97,7 +105,7 @@ Clone Petrel from github. Then run:
 
 This will download a few dependencies and then print a message like:
 
-    Finished processing dependencies for petrel==0.7.4.0.1
+    Finished processing dependencies for petrel==1.0.2.0.3
 
 Topology Configuration
 ======================

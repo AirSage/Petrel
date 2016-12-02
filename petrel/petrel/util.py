@@ -2,6 +2,7 @@ import os
 
 import yaml
 
+
 def read_yaml(config):
     if os.path.exists(config):
         with open(config, 'r') as f:

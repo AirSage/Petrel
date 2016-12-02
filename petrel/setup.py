@@ -15,6 +15,7 @@ PACKAGE = "petrel"
 
 PETREL_VERSION = '0.3'
 
+
 def get_storm_version():
     version_output = [s.strip() for s in subprocess.check_output(['storm', 'version']).split('\n')]
     for line in version_output:

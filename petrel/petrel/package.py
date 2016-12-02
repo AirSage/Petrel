@@ -9,16 +9,17 @@ import pkg_resources
 from itertools import chain
 from cStringIO import StringIO
 
-from emitter import EmitterBase
 from topologybuilder import TopologyBuilder
 from util import read_yaml
 
 MANIFEST = 'manifest.txt'
 
+
 def add_to_jar(jar, name, data):
     path = 'resources/%s' % name
     print 'Adding %s' % path
     jar.writestr(path, data)
+
 
 def add_file_to_jar(jar, directory, script=None, required=True, strip_dir=True):
     if script is not None:
@@ -42,6 +43,7 @@ def add_file_to_jar(jar, directory, script=None, required=True, strip_dir=True):
                 name = os.path.relpath(this_path)
             add_to_jar(jar, name, f.read())
 
+
 def add_dir_to_jar(jar, directory, required=True):
     dir_path_list = glob.glob(directory)
 
@@ -52,6 +54,7 @@ def add_dir_to_jar(jar, directory, required=True):
             for filename in filenames:
                 add_file_to_jar(jar, dirpath, filename, strip_dir=False)
 
+
 def add_item_to_jar(jar, item):
     path_list = glob.glob(item)
     for this_path in path_list:
@@ -61,6 +64,7 @@ def add_item_to_jar(jar, item):
             add_file_to_jar(jar, this_path)
         else:
             raise ValueError("No file or directory found matching: %s" % this_path)
+
 
 def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None, logdir=None):
     """Build a StormTopology .jar which encapsulates the topology defined in
@@ -161,6 +165,7 @@ petrel.host: %s
         if added_path_entry:
             # Undo our sys.path change.
             sys.path[:] = sys.path[1:]
+
 
 def intercept(venv, execution_command, script, jar, pip_options, logdir):
     #create_virtualenv = 1 if execution_command == EmitterBase.DEFAULT_PYTHON else 0
@@ -324,15 +329,15 @@ echo "Launching: python -m petrel.run $SCRIPT $LOG" >>$LOG 2>&1
 # not only less efficient but also confuses the way Storm monitors processes.
 exec python -m petrel.run $SCRIPT $LOG
 ''' % dict(
-    major=sys.version_info.major,
-    minor=sys.version_info.minor,
-    script=script,
-    venv='$WRKDIR/venv' if venv is None else venv,
-    logdir='$PWD' if logdir is None else logdir,
-    create_virtualenv=create_virtualenv,
-    thrift_version=pkg_resources.get_distribution("thrift").version,
-    petrel_version=pkg_resources.get_distribution("petrel").version,
-    pip_options=pip_options,
+        major=sys.version_info.major,
+        minor=sys.version_info.minor,
+        script=script,
+        venv='$WRKDIR/venv' if venv is None else venv,
+        logdir='$PWD' if logdir is None else logdir,
+        create_virtualenv=create_virtualenv,
+        thrift_version=pkg_resources.get_distribution("thrift").version,
+        petrel_version=pkg_resources.get_distribution("petrel").version,
+        pip_options=pip_options,
     ))
 
     return '/bin/bash', intercept_script

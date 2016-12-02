@@ -60,11 +60,11 @@
 				<activeByDefault>false</activeByDefault>
 	                        <property>
 					<name>storm_version</name>
-					<value>1.0.0</value>
+					<value>1.0.2</value>
 				</property>
 			</activation>
 			<build>
-				<finalName>storm-petrel-1.0.0-SNAPSHOT</finalName>
+				<finalName>storm-petrel-1.0.2-SNAPSHOT</finalName>
 			</build>
 			<id>storm1.0.0</id>
 			<dependencies>
@@ -72,7 +72,7 @@
                     <!-- Use settings documented here: https://storm.incubator.apache.org/downloads.html -->
 					<groupId>org.apache.storm</groupId>
 					<artifactId>storm-core</artifactId>
-					<version>1.0.0</version>
+					<version>1.0.2</version>
 					<!-- keep storm out of the jar-with-dependencies -->
 					<scope>provided</scope>
 				</dependency>

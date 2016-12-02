@@ -12,10 +12,10 @@ from petrel.generated.storm.ttypes import ComponentObject, StormTopology
 # 0. The resulting map won't be efficient at storing large amounts of data, but
 # it should work in all cases.
 # https://issues.apache.org/jira/browse/THRIFT-162.
-assert not hasattr(GlobalStreamId, '__hash__')
 GlobalStreamId.__hash__ = lambda self: 0
 
 ##########################################################################
+
 
 class TopologyBuilder(object):
     def __init__(self):
@@ -141,6 +141,7 @@ class TopologyBuilder(object):
         if conf is not None:
             common.json_conf = json.dumps(conf)
         self._commons[id] = common
+
 
 class _BoltGetter(object):
     def __init__(self, owner, boltId):

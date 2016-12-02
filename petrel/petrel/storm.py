@@ -54,6 +54,7 @@ ANCHOR_TUPLE = None
 #queue up commands we read while trying to read taskids
 pending_commands = deque()
 
+
 def readTaskIds():
     if pending_taskids:
         return pending_taskids.popleft()
@@ -67,6 +68,7 @@ def readTaskIds():
 #queue up taskids we read while trying to read commands/tuples
 pending_taskids = deque()
 
+
 def readCommand():
     if pending_commands:
         return pending_commands.popleft()
@@ -77,9 +79,11 @@ def readCommand():
             msg = readMsg()
         return msg
 
+
 def readTuple():
     cmd = readCommand()
     return Tuple(cmd["id"], cmd["comp"], cmd["stream"], cmd["task"], cmd["tuple"])
+
 
 def sendMsgToParent(msg):
     print >> old_stdout, json_encode(msg)
@@ -92,7 +96,8 @@ def sendMsgToParent(msg):
             type(e).__name__,
             e.errno,
             str(e)))
-    
+
+
 # This function is probably obsolete with the addition of the new
 # reportError() function.
 # TODO: Consider getting rid of this function and call reportError() instead.
@@ -112,19 +117,23 @@ def sendFailureMsgToParent(msg):
     print >> old_stdout, msg
     print >> old_stdout, "end"
     storm_log.error('Sent failure message ("%s") to Storm', msg)
-    
+
+
 def sync():
     sendMsgToParent({'command':'sync'})
+
 
 def sendpid(heartbeatdir):
     pid = os.getpid()
     sendMsgToParent({'pid':pid})
     open(heartbeatdir + "/" + str(pid), "w").close()    
 
+
 def emit(*args, **kwargs):
     result = __emit(*args, **kwargs)
     if result:
         return readTaskIds()
+
 
 def emitMany(*args, **kwargs):
     """A more efficient way to emit a number of tuples at once."""
@@ -134,9 +143,11 @@ def emitMany(*args, **kwargs):
     elif MODE == Spout:
         emitManySpout(*args, **kwargs)
 
+
 def emitDirect(task, *args, **kwargs):
     kwargs["directTask"] = task
     __emit(*args, **kwargs)
+
 
 def __emit(*args, **kwargs):
     global MODE
@@ -144,6 +155,7 @@ def __emit(*args, **kwargs):
         return emitBolt(*args, **kwargs)
     elif MODE == Spout:
         return emitSpout(*args, **kwargs)
+
 
 def emitManyBolt(tuples, stream=None, anchors = [], directTask=None):
     global ANCHOR_TUPLE
@@ -167,6 +179,7 @@ def emitManyBolt(tuples, stream=None, anchors = [], directTask=None):
         lines.append('end')
     print >> old_stdout, '\n'.join(lines)
 
+
 def emitBolt(tup, stream=None, anchors = [], directTask=None, need_task_ids=False):
     global ANCHOR_TUPLE
     if ANCHOR_TUPLE is not None:
@@ -183,8 +196,9 @@ def emitBolt(tup, stream=None, anchors = [], directTask=None, need_task_ids=Fals
         m["task"] = directTask
     sendMsgToParent(m)
     return need_task_ids
-    
-def emitManySpout(tuples, stream=None, id=None, directTask=None):
+
+
+def emitManySpout(tuples, stream=None, id=None, directTask=None, need_task_ids=False):
     m = {
         "command": "emit",
         "tuple": None,
@@ -204,6 +218,7 @@ def emitManySpout(tuples, stream=None, id=None, directTask=None):
         lines.append('end')
     print >> old_stdout, '\n'.join(lines)
 
+
 def emitSpout(tup, stream=None, id=None, directTask=None, need_task_ids=False):
     m = {
         "command": "emit",
@@ -219,23 +234,29 @@ def emitSpout(tup, stream=None, id=None, directTask=None, need_task_ids=False):
     sendMsgToParent(m)
     return need_task_ids
 
+
 def ack(tup):
     """Acknowledge a tuple"""
     sendMsgToParent({"command": "ack", "id": tup.id})
+
 
 def ackId(tupid):
     """Acknowledge a tuple when you only have its ID"""
     sendMsgToParent({"command": "ack", "id": tupid})
 
+
 def fail(tup):
     """Fail a tuple"""
     sendMsgToParent({"command": "fail", "id": tup.id})
 
+
 def reportError(msg):
     sendMsgToParent({"command": "error", "msg": msg})
 
+
 def log(msg):
     sendMsgToParent({"command": "log", "msg": msg})
+
 
 def initComponent():
     # Redirect stdout and stderr to logger instances. This is particularly
@@ -249,6 +270,7 @@ def initComponent():
     sendpid(setupInfo['pidDir'])
     storm_log.info('Task sent pid to Storm')
     return [setupInfo['conf'], setupInfo['context']]
+
 
 class Tuple(object):
     __slots__ = ['id', 'component', 'stream', 'task', 'values']
@@ -283,6 +305,7 @@ class Tuple(object):
     def is_tick_tuple(self):
         return self.task == -1 and self.stream == "__tick"
 
+
 class Task(object):
     def shared_initialize(self):
         conf, context = initComponent()
@@ -313,6 +336,7 @@ class Task(object):
         # the Storm UI.
         time.sleep(5)
 
+
 class Bolt(Task):
     def __init__(self):
         if TUPLE_PROFILING:
@@ -341,7 +365,7 @@ class Bolt(Task):
                     if profiler is not None: profiler.post_read()
                     self.process(tup)
                     if profiler is not None: profiler.post_process()
-        except Exception, e:
+        except Exception as e:
             self.report_exception('E_BOLTFAILED', e)
             storm_log.exception('Caught exception in Bolt.run')
             if 'tup' in locals():
@@ -351,6 +375,7 @@ class Bolt(Task):
                 storm_log.error(
                     'The error occurred while processing this tuple: %s',
                     repr(tup.values)[:2000])
+
 
 class BasicBolt(Task):
     def __init__(self):
@@ -384,7 +409,7 @@ class BasicBolt(Task):
                     if profiler is not None: profiler.post_process()
                     ack(tup)
                     if profiler is not None: profiler.post_ack()
-        except Exception, e:
+        except Exception as e:
             storm_log.info('Caught exception')
             self.report_exception('E_BOLTFAILED', e)
             storm_log.exception('Caught exception in BasicBolt.run')
@@ -395,6 +420,7 @@ class BasicBolt(Task):
                 storm_log.error(
                     'The error occurred while processing this tuple: %s',
                     repr(tup.values)[:2000])
+
 
 class Spout(Task):
     def initialize(self, conf, context):
@@ -424,9 +450,10 @@ class Spout(Task):
                 elif command == "fail":
                     self.fail(msg["id"])
                 sync()
-        except Exception, e:
+        except Exception as e:
             self.report_exception('E_SPOUTFAILED', e)
             storm_log.exception('Caught exception in Spout.run: %s', str(e))
+
 
 class BoltProfiler(object):
     """Helper class for Bolt. Implements some simple log-based counters for
@@ -466,6 +493,7 @@ class BoltProfiler(object):
             self.start_interval = None
             self.num_tuples = 0
             self.read_time = self.process_time = 0.0
+
 
 class BasicBoltProfiler(object):
     """Helper class for BasicBolt. Implements some simple log-based counters for
@@ -511,6 +539,7 @@ class BasicBoltProfiler(object):
             self.num_tuples = 0
             self.read_time = self.process_time = self.ack_time = 0.0
 
+
 def initialize_profiling():
     global TUPLE_PROFILING
     TUPLE_PROFILING = storm_log.isEnabledFor(logging.DEBUG)
@@ -518,6 +547,7 @@ def initialize_profiling():
         storm_log.info('Tuple profiling enabled. Will log tuple processing times.')
     else:
         storm_log.info('Tuple profiling NOT enabled. Will not log tuple processing times.')
+
 
 class LogStream(object):
     """Object that implements enough of the Python stream API to be used as
