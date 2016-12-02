@@ -1,7 +1,10 @@
+import io
 import json
 
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
+
+import six
 
 from petrel.generated.storm.ttypes import ComponentCommon, Grouping, NullStruct, GlobalStreamId
 from petrel.generated.storm.ttypes import StreamInfo, Bolt, SpoutSpec, ShellComponent
@@ -15,6 +18,29 @@ from petrel.generated.storm.ttypes import ComponentObject, StormTopology
 GlobalStreamId.__hash__ = lambda self: 0
 
 ##########################################################################
+
+
+class TMemoryBuffer(TTransport.TMemoryBuffer):
+    """
+    This class is a workaround for a Python 3 incompatibility in thrift --
+    its implementation of TMemoryBuffer uses a StringIO object, but it should
+    use bytes.
+    """
+    def __init__(self, value=None):
+        """value -- a value to read from for stringio
+
+        If value is set, this will be a transport for reading,
+        otherwise, it is for writing"""
+        if value is not None:
+            self._buffer = io.BytesIO(value)
+        else:
+            self._buffer = io.BytesIO()
+
+    def write(self, buf):
+        if six.PY3:
+            if not isinstance(buf, six.binary_type):
+                buf = six.binary_type(buf, 'ascii')
+        self._buffer.write(buf)
 
 
 class TopologyBuilder(object):
@@ -46,7 +72,7 @@ class TopologyBuilder(object):
     # */
     def setSpout(self, id, spout, parallelism_hint=None):
         self._validateUnusedId(id);
-        self._initCommon(id, spout, parallelism_hint);
+        self._initCommon(id, spout, parallelism_hint)
         self._spouts[id] = spout
 
     def addOutputStream(self, id, streamId, output_fields, direct=False):
@@ -55,7 +81,7 @@ class TopologyBuilder(object):
     def createTopology(self):
         boltSpecs = {}
         spoutSpecs = {}
-        for boltId, bolt in self._bolts.iteritems():
+        for boltId, bolt in six.iteritems(self._bolts):
             t_bolt = Bolt()
             shell_object = ShellComponent()
             shell_object.execution_command = bolt.execution_command
@@ -65,7 +91,7 @@ class TopologyBuilder(object):
             t_bolt.common = self._getComponentCommon(boltId, bolt)
             boltSpecs[boltId] = t_bolt
 
-        for spoutId, spout in self._spouts.iteritems():
+        for spoutId, spout in six.iteritems(self._spouts):
             spout_spec = SpoutSpec()
             shell_object = ShellComponent()
             shell_object.execution_command = spout.execution_command
@@ -85,13 +111,13 @@ class TopologyBuilder(object):
         """Writes the topology to a stream or file."""
         topology = self.createTopology()
         def write_it(stream):
-            transportOut = TTransport.TMemoryBuffer()
+            transportOut = TMemoryBuffer()
             protocolOut = TBinaryProtocol.TBinaryProtocol(transportOut)
             topology.write(protocolOut)
             bytes = transportOut.getvalue()
             stream.write(bytes)
 
-        if isinstance(stream, basestring):
+        if isinstance(stream, six.string_types):
             with open(stream, 'wb') as f:
                 write_it(f)
         else:
@@ -103,13 +129,13 @@ class TopologyBuilder(object):
         """Reads the topology from a stream or file."""
         def read_it(stream):
             bytes = stream.read()
-            transportIn = TTransport.TMemoryBuffer(bytes)
+            transportIn = TMemoryBuffer(bytes)
             protocolIn = TBinaryProtocol.TBinaryProtocol(transportIn)
             topology = StormTopology()
             topology.read(protocolIn)
             return topology
             
-        if isinstance(stream, basestring):
+        if isinstance(stream, six.string_types):
             with open(stream, 'rb') as f:
                 return read_it(f)
         else:

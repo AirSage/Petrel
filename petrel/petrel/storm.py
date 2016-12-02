@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 import os
 import time
@@ -7,6 +9,8 @@ import logging
 from collections import deque
 
 import json
+
+import six
 
 storm_log = logging.getLogger('storm')
 
@@ -76,8 +80,8 @@ def readTuple():
 
 
 def sendMsgToParent(msg):
-    print >> old_stdout, json_encode(msg)
-    print >> old_stdout, "end"
+    print(json_encode(msg), file=old_stdout)
+    print('end', file=old_stdout)
     try:
         old_stdout.flush()
     except (IOError, OSError) as e:
@@ -103,9 +107,9 @@ def sendFailureMsgToParent(msg):
     the Storm worker to throw an error and restart the Python task. This
     is cleaner than simply letting the task die without notifying Storm,
     because this way Storm restarts the task more quickly."""
-    assert isinstance(msg, basestring)
-    print >> old_stdout, msg
-    print >> old_stdout, "end"
+    assert isinstance(msg, six.string_types)
+    print(msg, file=old_stdout)
+    print('end', file=old_stdout)
     storm_log.error('Sent failure message ("%s") to Storm', msg)
 
 
@@ -167,7 +171,7 @@ def emitManyBolt(tuples, stream=None, anchors = [], directTask=None):
         m["tuple"] = tup
         lines.append(json_encode(m))
         lines.append('end')
-    print >> old_stdout, '\n'.join(lines)
+    print(lines, '\n', file=old_stdout)
 
 
 def emitBolt(tup, stream=None, anchors = [], directTask=None, need_task_ids=False):
@@ -206,7 +210,7 @@ def emitManySpout(tuples, stream=None, id=None, directTask=None, need_task_ids=F
         m["tuple"] = tup
         lines.append(json_encode(m))
         lines.append('end')
-    print >> old_stdout, '\n'.join(lines)
+    print(lines, '\n', file=old_stdout)
 
 
 def emitSpout(tup, stream=None, id=None, directTask=None, need_task_ids=False):

@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 import os
 import sys
 
-import storm
+from petrel import storm
 
 
 class EmitterBase(object):

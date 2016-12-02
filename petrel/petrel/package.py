@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import io
 import os
 import sys
 import shutil
@@ -11,7 +12,7 @@ import pkg_resources
 
 from itertools import chain
 
-from six import StringIO
+import six
 
 from .topologybuilder import TopologyBuilder
 from .util import read_yaml
@@ -39,7 +40,7 @@ def add_file_to_jar(jar, directory, script=None, required=True, strip_dir=True):
     #elif len(path_list) > 1:
     #    raise ValueError("Wildcard '%s' matches multiple files: %s" % (path, ', '.join(path_list)))
     for this_path in path_list:
-        with open(this_path, 'r') as f:
+        with open(this_path, 'rb') as f:
             if strip_dir:
                 # Drop the path when adding to the jar.
                 name = os.path.basename(this_path)
@@ -52,7 +53,7 @@ def add_dir_to_jar(jar, directory, required=True):
     dir_path_list = glob.glob(directory)
 
     if len(dir_path_list) == 0 and required:
-        raise ValueError('No directory found matching: %s' % path)
+        raise ValueError('No directory found matching: %s' % directory)
     for dir_path in dir_path_list:
         for dirpath, dirnames, filenames in os.walk(dir_path):
             for filename in filenames:
@@ -81,7 +82,7 @@ def build_jar(source_jar_path, dest_jar_path, config, venv=None, definition=None
 
     # Prepare data we'll use later for configuring parallelism.
     config_yaml = read_yaml(config)
-    parallelism = dict((k.split('.')[-1], v) for k, v in config_yaml.iteritems()
+    parallelism = dict((k.split('.')[-1], v) for k, v in six.iteritems(config_yaml)
         if k.startswith('petrel.parallelism'))
 
     pip_options = config_yaml.get('petrel.pip_options', '')
@@ -134,7 +135,7 @@ petrel.host: %s
         # setup_<script>.sh for each Python script.
 
         # Add Python scripts and any other per-script resources.
-        for k, v in chain(builder._spouts.iteritems(), builder._bolts.iteritems()):
+        for k, v in chain(six.iteritems(builder._spouts), six.iteritems(builder._bolts)):
             add_file_to_jar(jar, topology_dir, v.script)
 
             # Create a bootstrap script.
@@ -161,9 +162,9 @@ petrel.host: %s
         # Build the Thrift topology object and serialize it to the .jar. Must do
         # this *after* the intercept step above since that step may modify the
         # topology definition.
-        io = StringIO()
-        topology = builder.write(io)
-        add_to_jar(jar, 'topology.ser', io.getvalue())
+        buf = io.BytesIO()
+        builder.write(buf)
+        add_to_jar(jar, 'topology.ser', buf.getvalue())
     finally:
         jar.close()
         if added_path_entry:

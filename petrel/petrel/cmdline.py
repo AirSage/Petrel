@@ -8,14 +8,22 @@ import sys
 import traceback
 
 import pkg_resources
+import six
 
 from .util import read_yaml
 from .package import build_jar
 from .status import status
 
 
+def _ensure_str(b):
+    if six.PY3:
+        return str(b, 'ascii')
+    else:
+        return b
+
+
 def get_storm_version():
-    version_output = [s.strip() for s in subprocess.check_output(['storm', 'version']).split('\n')]
+    version_output = [s.strip() for s in _ensure_str(subprocess.check_output(['storm', 'version'])).split('\n')]
     for line in version_output:
         m = re.search(r'^(Storm )?(\d+\.\d+\.\d+)(-(\w+))?$', line)
         if m is not None:
@@ -44,7 +52,7 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
         definition=definition,
         venv=venv,
         logdir=logdir)
-    storm_class_path = [ subprocess.check_output(["storm","classpath"]).strip(), destjar ]
+    storm_class_path = [ _ensure_str(subprocess.check_output(["storm","classpath"])).strip(), destjar ]
     if extrastormcp is not None:
         storm_class_path = [ extrastormcp ] + storm_class_path
     storm_home = os.path.dirname(os.path.dirname(

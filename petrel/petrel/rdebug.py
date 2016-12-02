@@ -1,10 +1,12 @@
 ## {{{ http://code.activestate.com/recipes/576515/ (r2)
+from __future__ import print_function
+
 try: import readline  # For readline input support
 except: pass
 
 import sys, os, traceback, signal, codeop, cPickle, tempfile
 
-from six import StringIO
+import six
 
 
 def pipename(pid):
@@ -13,7 +15,7 @@ def pipename(pid):
 
 
 class NamedPipe(object):
-    def __init__(self, name, end=0, mode=0666):
+    def __init__(self, name, end=0, mode=0o666):
         """Open a pair of pipes, name.in and name.out for communication
         with another process.  One process should pass 1 for end, and the
         other 0.  Data is marshalled with pickle."""
@@ -96,16 +98,16 @@ def remote_debug(sig,frame):
                 try:
                     code = codeop.compile_command(txt)
                     if code:
-                        sys.stdout = StringIO()
+                        sys.stdout = six.StringIO()
                         sys.stderr = sys.stdout
-                        exec code in globs,locs
+                        six.exec_(code, globs, locs)
                         txt = ''
                         pipe.put(sys.stdout.getvalue() + '>>> ')
                     else:
                         pipe.put('... ')
                 except:
                     txt='' # May be syntax err.
-                    sys.stdout = StringIO()
+                    sys.stdout = six.StringIO()
                     sys.stderr = sys.stdout
                     traceback.print_exc()
                     pipe.put(sys.stdout.getvalue() + '>>> ')
@@ -138,7 +140,7 @@ def listen():
 
 if __name__=='__main__':
     if len(sys.argv) != 2:
-        print "Error: Must provide process id to debug"
+        print("Error: Must provide process id to debug")
     else:
         pid = int(sys.argv[1])
         debug_process(pid)
