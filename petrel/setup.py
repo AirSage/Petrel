@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import os
 import re
 import shutil
@@ -6,9 +8,11 @@ import subprocess
 import sys
 
 from setuptools import setup, find_packages
-from six.moves.urllib.request import urlopen
+if sys.version_info.major == 2:
+    from urllib2 import urlopen
+else:
+    from urllib.request import urlopen
 
-import six
 
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + '\n\n'
@@ -19,7 +23,7 @@ PETREL_VERSION = '0.3'
 
 
 def ensure_str(b):
-    if six.PY3:
+    if sys.version_info.major == 3:
         return str(b, 'ascii')
     else:
         return b
@@ -60,17 +64,29 @@ def build_petrel():
     else:
         f_url = urlopen('https://raw.githubusercontent.com/apache/storm/v%s/storm-core/src/storm.thrift' % version_number)
 
-    with open('storm.thrift', 'wb') as f:
-        f.write(f_url.read())
+    with open('storm.thrift', 'w') as f:
+        print('namespace py petrel.generated.storm', file=f)
+        f.write(ensure_str(f_url.read()))
     f_url.close()
-    old_cwd = os.getcwd()
-    os.chdir('petrel/generated')
 
-    subprocess.check_call(['thrift', '-gen', 'py', '-out', '.', '../../storm.thrift'])
-    os.chdir(old_cwd)
+    subprocess.check_call(['thrift', '-gen', 'py', '-out', '.', 'storm.thrift'])
     os.remove('storm.thrift')
-    
+
+    # :HACK: Thrift generates code that is not compatible with Python 3. To fix
+    # this, we patch some of the generated files to use relative imports.
+    for filename in ['constants.py', 'Nimbus.py']:
+        path = os.path.join('petrel/generated/storm', filename)
+        with open(path, 'r') as f:
+            lines = f.readlines()
+            for i, line in enumerate(lines):
+                if line == 'from ttypes import *\n':
+                    lines[i] = 'from .ttypes import *\n'
+        with open(path, 'w') as f:
+            for line in lines:
+                print(line, file=f, end='')
+
     # Build JVMPetrel.
+    old_cwd = os.getcwd()
     os.chdir('../jvmpetrel')
     subprocess.check_call(['mvn', '-Dstorm_version=%s' % version_number, 'assembly:assembly'])
     os.chdir(old_cwd)
