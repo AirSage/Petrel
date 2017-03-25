@@ -1,10 +1,10 @@
 import unittest
-from cStringIO import StringIO
+
+from six import StringIO
 
 from petrel.topologybuilder import TopologyBuilder
 from petrel.emitter import Spout, BasicBolt
 
-from petrel.generated.storm.ttypes import Bolt, SpoutSpec
 
 class RandomSentenceSpout(Spout):
     def __init__(self, execution_command=None):
@@ -13,6 +13,7 @@ class RandomSentenceSpout(Spout):
     def declareOutputFields(self):
         return ['sentence']
 
+
 class SplitSentence(BasicBolt):
     def __init__(self, execution_command=None):
         super(SplitSentence, self).__init__(script='splitsentence.py')
@@ -20,12 +21,14 @@ class SplitSentence(BasicBolt):
     def declareOutputFields(self):
         return ['word']
 
+
 class WordCount(BasicBolt):
     def __init__(self, execution_command=None):
         super(WordCount, self).__init__(script='wordcount.py')
 
     def declareOutputFields(self):
         return ['word', 'count']
+
 
 class TestTopology(unittest.TestCase):
     def test1(self):

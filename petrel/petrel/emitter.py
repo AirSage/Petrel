@@ -1,9 +1,13 @@
+from abc import ABCMeta, abstractmethod
 import os
 import sys
 
-import storm
+from petrel import storm
+
 
 class EmitterBase(object):
+    __metaclass__ = ABCMeta
+
     DEFAULT_PYTHON = 'python%d.%d' % (sys.version_info.major, sys.version_info.minor)
 
     def __init__(self, script):
@@ -17,7 +21,8 @@ class EmitterBase(object):
         self.script = script
         self._json = {}
         super(EmitterBase, self).__init__()
-    
+
+    @abstractmethod
     def declareOutputFields(declarer):
         raise NotImplementedError()
 
@@ -27,11 +32,14 @@ class EmitterBase(object):
         else:
             return None
 
+
 class Spout(EmitterBase, storm.Spout):
-    pass
+    __metaclass__ = ABCMeta
+
 
 class BasicBolt(EmitterBase, storm.BasicBolt):
-    pass
+    __metaclass__ = ABCMeta
+
 
 class Bolt(EmitterBase, storm.Bolt):
-    pass
+    __metaclass__ = ABCMeta

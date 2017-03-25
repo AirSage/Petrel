@@ -1,20 +1,29 @@
-import os
-import sys
+from __future__ import print_function
+
 import argparse
-import traceback
-import subprocess
+import os
 import re
+import subprocess
+import sys
+import traceback
 
 import pkg_resources
-import yaml
+import six
 
 from .util import read_yaml
 from .package import build_jar
-from .emitter import EmitterBase
 from .status import status
 
+
+def _ensure_str(b):
+    if six.PY3:
+        return str(b, 'ascii')
+    else:
+        return b
+
+
 def get_storm_version():
-    version_output = [s.strip() for s in subprocess.check_output(['storm', 'version']).split('\n')]
+    version_output = [s.strip() for s in _ensure_str(subprocess.check_output(['storm', 'version'])).split('\n')]
     for line in version_output:
         m = re.search(r'^(Storm )?(\d+\.\d+\.\d+)(-(\w+))?$', line)
         if m is not None:
@@ -29,6 +38,7 @@ def get_sourcejar():
         'petrel/generated/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % storm_version)
     return sourcejar
 
+
 def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastormcp):
     # Build a topology jar and submit it to Storm.
     if not sourcejar:
@@ -42,7 +52,7 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
         definition=definition,
         venv=venv,
         logdir=logdir)
-    storm_class_path = [ subprocess.check_output(["storm","classpath"]).strip(), destjar ]
+    storm_class_path = [ _ensure_str(subprocess.check_output(["storm","classpath"])).strip(), destjar ]
     if extrastormcp is not None:
         storm_class_path = [ extrastormcp ] + storm_class_path
     storm_home = os.path.dirname(os.path.dirname(
@@ -60,6 +70,7 @@ def submit(sourcejar, destjar, config, venv, name, definition, logdir, extrastor
         submit_args += [name]
     os.execvp('java', submit_args)
 
+
 def kill(name, config):
     config = read_yaml(config)
     
@@ -70,6 +81,7 @@ def kill(name, config):
     if nimbus_host:
         kill_args += ['-c', 'nimbus.host=%s' % nimbus_host]
     os.execvp('storm', kill_args)
+
 
 def main():
     parser = argparse.ArgumentParser(prog='petrel', description='Petrel command line')
@@ -113,7 +125,7 @@ def main():
         func = args.__dict__.pop('func')
         func(**args.__dict__)
     except Exception as e:
-        print str(e)
+        print(str(e))
         traceback.print_exc()
         sys.exit(1)
 

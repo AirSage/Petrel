@@ -1,10 +1,12 @@
+from __future__ import print_function
+
 import os
 import sys
 import socket
 import logging.config
 import traceback
 
-import storm
+from petrel import storm
 
 LOG_CONFIG_FILE = 'logconfig.ini'
 
@@ -12,8 +14,10 @@ log_file_path = None
 log_initialized = False
 module_name = ''
 
+
 def open_log():
     return open(log_file_path, 'a')
+
 
 def handle_exception(type, value, tb):
     message = 'E_RUNFAILED_%s_%s_%d_%s' % (module_name,
@@ -26,8 +30,9 @@ def handle_exception(type, value, tb):
     storm.sendFailureMsgToParent(message)
    
     with open_log() as f:
-        print >> f, 'Exception occurred in %s. Worker exiting.' % module_name
+        print('Exception occurred in %s. Worker exiting.' % module_name, file=f)
         f.write(''.join(traceback.format_exception(type, value, tb)))
+
 
 def log_config():
     assert 'PETREL_LOG_PATH' in os.environ
@@ -44,6 +49,7 @@ def log_config():
     if os.path.exists(LOG_CONFIG_FILE):
         logging.config.fileConfig(LOG_CONFIG_FILE)
 
+
 # This code is still a work in progress. It may have bugs that cause
 # topologies to be unstable. I've seen it cause ShellSpout.querySubprocess()
 # in Java to receive a JSONObject with a null "command" value.
@@ -58,7 +64,6 @@ class StormHandler(logging.Handler):
         self.format_string = '[%s][%s][%d] %%s' % (hostname, script_name, process_id)
     
     def emit(self, record):
-        from petrel import storm
         msg = self.format(record)
         for line in msg.split('\n'):
             formatted_line = self.format_string % line
@@ -68,9 +73,10 @@ class StormHandler(logging.Handler):
 # Comment this out until logging to Storm proves to be stable.
 #logging.StormHandler = StormHandler
 
+
 def main():
     if len(sys.argv) != 3:
-        print >> sys.stderr, "Usage: %s <module> <log file>" % os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        print("Usage: %s <module> <log file>" % os.path.splitext(os.path.basename(sys.argv[0]))[0], file=sys.stderr)
         sys.exit(1)
 
     try:
@@ -80,14 +86,14 @@ def main():
         sys.excepthook = handle_exception
     
         with open_log() as f:
-            print >> f, '%s invoked with the following arguments: %s' % (sys.argv[0], repr(sys.argv[1:]))
+            print('%s invoked with the following arguments: %s' % (sys.argv[0], repr(sys.argv[1:])), file=f)
             ver_info = sys.version_info
-            print >> f, "python version: %d.%d.%d" % (ver_info.major, ver_info.minor, ver_info.micro)
+            print("python version: %d.%d.%d" % (ver_info.major, ver_info.minor, ver_info.micro), file=f)
             import getpass
-            print >> f, 'user=%s' % getpass.getuser()
-            print >> f, 'PATH=%s' % os.getenv('PATH')
-            print >> f, 'LD_LIBRARY_PATH=%s' % os.getenv('LD_LIBRARY_PATH')
-            print >> f, 'PYTHON_EGG_CACHE=%s' % os.getenv('PYTHON_EGG_CACHE')
+            print('user=%s' % getpass.getuser(), file=f)
+            print('PATH=%s' % os.getenv('PATH'), file=f)
+            print('LD_LIBRARY_PATH=%s' % os.getenv('LD_LIBRARY_PATH'), file=f)
+            print('PYTHON_EGG_CACHE=%s' % os.getenv('PYTHON_EGG_CACHE'), file=f)
 
         # Initialize logging. Redirect stderr to the log as well.
         log_config()
@@ -99,7 +105,7 @@ def main():
         module = __import__(module_name)
         getattr(module, 'run')()
         with open_log() as f:
-            print >> f, 'Worker %s exiting normally.' % module_name
+            print('Worker %s exiting normally.' % module_name, file=f)
     except:
         # Here we explicitly catch exceptions from the worker. This is a "belt
         # and suspenders" approach in case our sys.excepthook gets overwritten

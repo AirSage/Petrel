@@ -1,15 +1,21 @@
 ## {{{ http://code.activestate.com/recipes/576515/ (r2)
+from __future__ import print_function
+
 try: import readline  # For readline input support
 except: pass
 
-import sys, os, traceback, signal, codeop, cStringIO, cPickle, tempfile
+import sys, os, traceback, signal, codeop, cPickle, tempfile
+
+import six
+
 
 def pipename(pid):
     """Return name of pipe to use"""
     return os.path.join(tempfile.gettempdir(), 'debug-%d' % pid)
 
+
 class NamedPipe(object):
-    def __init__(self, name, end=0, mode=0666):
+    def __init__(self, name, end=0, mode=0o666):
         """Open a pair of pipes, name.in and name.out for communication
         with another process.  One process should pass 1 for end, and the
         other 0.  Data is marshalled with pickle."""
@@ -61,7 +67,8 @@ class NamedPipe(object):
 
     def __del__(self):
         self.close()
-        
+
+
 def remote_debug(sig,frame):
     """Handler to allow process to be remotely debugged."""
     def _raiseEx(ex):
@@ -91,16 +98,16 @@ def remote_debug(sig,frame):
                 try:
                     code = codeop.compile_command(txt)
                     if code:
-                        sys.stdout = cStringIO.StringIO()
+                        sys.stdout = six.StringIO()
                         sys.stderr = sys.stdout
-                        exec code in globs,locs
+                        six.exec_(code, globs, locs)
                         txt = ''
                         pipe.put(sys.stdout.getvalue() + '>>> ')
                     else:
                         pipe.put('... ')
                 except:
                     txt='' # May be syntax err.
-                    sys.stdout = cStringIO.StringIO()
+                    sys.stdout = six.StringIO()
                     sys.stderr = sys.stdout
                     traceback.print_exc()
                     pipe.put(sys.stdout.getvalue() + '>>> ')
@@ -113,7 +120,8 @@ def remote_debug(sig,frame):
         traceback.print_exc()
         
     if _raiseEx.ex is not None: raise _raiseEx.ex
-    
+
+
 def debug_process(pid):
     """Interrupt a running process and debug it."""
     os.kill(pid, signal.SIGUSR1)  # Signal process.
@@ -126,12 +134,13 @@ def debug_process(pid):
         pass # Exit.
     pipe.close()
 
+
 def listen():
     signal.signal(signal.SIGUSR1, remote_debug) # Register for remote debugging.
 
 if __name__=='__main__':
     if len(sys.argv) != 2:
-        print "Error: Must provide process id to debug"
+        print("Error: Must provide process id to debug")
     else:
         pid = int(sys.argv[1])
         debug_process(pid)
