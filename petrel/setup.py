@@ -68,7 +68,7 @@ def build_petrel():
         '../jvmpetrel/target/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % version_number,
         'petrel/generated/storm-petrel-%s-SNAPSHOT-jar-with-dependencies.jar' % version_number)
 
-if 'bdist_egg' in sys.argv or 'develop' in sys.argv:
+if 'bdist_egg' in sys.argv or 'bdist_wheel' in sys.argv or 'develop' in sys.argv:
     build_petrel()
 
 setup(name=PACKAGE
