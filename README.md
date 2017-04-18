@@ -207,7 +207,7 @@ args=((os.getenv('NIMBUS_HOST') or 'localhost',handlers.SYSLOG_UDP_PORT),handler
 Petrel also has a "StormHandler" class sends messages to the Storm logger. This feature has not been thoroughly tested, but can be enabled by uncommenting the following line in petrel/util.py:
 
 <pre>
-#logging.StormHandler = StormHandler
+# logging.StormHandler = StormHandler
 </pre>
 
 Storm Logging
