@@ -6,13 +6,13 @@ do
     virtualenv_name=Petrel-${version}
     pyenv uninstall -f ${virtualenv_name}
     pyenv virtualenv ${version} ${virtualenv_name}
-    source /home/barry/.pyenv/versions/Petrel-2.7.13/bin/activate
+    source /home/barry/.pyenv/versions/${virtualenv_name}/bin/activate
     pip install -U pip setuptools wheel
     pushd jvmpetrel
     mvn clean
     popd
     pushd petrel
-    python setup.py bdist_wheel
+    python setup.py bdist_wheel upload
     popd
 done
 

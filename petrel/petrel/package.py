@@ -270,6 +270,7 @@ if [[ "$unamestr" != 'Darwin' ]]; then
             echo "Creating new venv: $VENV" >>$LOG 2>&1
             virtualenv --system-site-packages --python python$PYVER $VENV >>$VENV_LOG 2>&1
             source $VENV/bin/activate >>$VENV_LOG 2>&1
+            pip install -U setuptools wheel
 
             # Ensure the version of Thrift on the worker matches our version.
             # This may not matter since Petrel only uses Thrift for topology build
@@ -290,7 +291,7 @@ if [[ "$unamestr" != 'Darwin' ]]; then
             # Because it does not require a local copy of the Petrel egg, this
             # is simpler for most Petrel users, especially new ones.
             # :TRICKY: Use bash glob expansion to see if a local file exists. See http://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-wildcard-in-shell-script
-            for f in petrel-*-py$PYVER.egg
+            for f in petrel-*-py*.whl
             do
                 # Check if the glob gets expanded to existing files.
                 # If not, f here will be exactly the pattern above
@@ -303,7 +304,7 @@ if [[ "$unamestr" != 'Darwin' ]]; then
                 else
                     # Case 2
                     echo "Installing petrel==%(petrel_version)s" >>$VENV_LOG 2>&1
-                    easy_install petrel==%(petrel_version)s >>$VENV_LOG 2>&1
+                    pip install petrel==%(petrel_version)s >>$VENV_LOG 2>&1
                 fi
             
                 # We can break after the first iteration.
