@@ -19,7 +19,7 @@ long_description = open(README).read() + '\n\n'
 
 PACKAGE = "petrel"
 
-PETREL_VERSION = '0.3'
+PETREL_VERSION = '0.3.post1'
 
 
 def ensure_str(b):
