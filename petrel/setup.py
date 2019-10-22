@@ -122,7 +122,7 @@ setup(name=PACKAGE
     ,install_requires=[
         # Request specific Thrift version. Storm is in Java and may be sensitive to version incompatibilities.
         'thrift==0.9.3',
-        'PyYAML==3.10',
+        'PyYAML==5.1',
         'six==1.10.0',
     ]
     # Setting this flag makes Petrel easier to debug within a running topology.
